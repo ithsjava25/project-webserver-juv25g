@@ -31,7 +31,7 @@ public class HttpParser {
             headers.put(key, value);
         }
         //DEBUG:
-//        for (String key : headers.values()) {
+//        for (String key : headers.keySet()) {
 //            System.out.println(key + ": " + headers.get(key));
 //        }
     }
