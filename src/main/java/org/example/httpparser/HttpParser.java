@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpParser {
-    public void parseHttpHeader(InputStream in) throws IOException {
+    private Map<String, String> headersMap;
+    public void parseHttp(InputStream in) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+
 
         Map<String, String> headers = new HashMap<>();
         String headerLine;
@@ -29,10 +31,17 @@ public class HttpParser {
             String value = headerLine.substring(valueSeparator + 1).trim();
 
             headers.put(key, value);
+
+            headersMap = headers;
         }
         //DEBUG:
-//        for (String key : headers.keySet()) {
-//            System.out.println(key + ": " + headers.get(key));
+//        System.out.println("Host: " + headersMap.get("Host"));
+//        for (String key : headersMap.keySet()) {
+//            System.out.println(key + ": " + headersMap.get(key));
 //        }
+    }
+
+    public Map<String, String> getHeadersMap() {
+        return headersMap;
     }
 }
