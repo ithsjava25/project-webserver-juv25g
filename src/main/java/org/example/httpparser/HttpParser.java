@@ -1,4 +1,4 @@
-package org.example.Httpparser;
+package org.example.httpparser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +13,7 @@ public class HttpParser {
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
         Map<String, String> headers = new HashMap<>();
-        String headerLine = br.readLine();
+        String headerLine;
 
         while ((headerLine = br.readLine()) != null) {
             if (headerLine.isEmpty()) {
