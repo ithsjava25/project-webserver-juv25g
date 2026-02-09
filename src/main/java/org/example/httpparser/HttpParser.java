@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpParser {
-    private Map<String, String> headersMap;
+    private Map<String, String> headersMap = new HashMap<>();
     public void parseHttp(InputStream in) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
@@ -31,9 +31,8 @@ public class HttpParser {
             String value = headerLine.substring(valueSeparator + 1).trim();
 
             headers.put(key, value);
-
-            headersMap = headers;
         }
+        headersMap = headers;
         //DEBUG:
 //        System.out.println("Host: " + headersMap.get("Host"));
 //        for (String key : headersMap.keySet()) {
