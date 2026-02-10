@@ -33,7 +33,7 @@ class HttpParseRequestLineTest {
 
 
     @Test
-    void testParserThrowErrorWhenNull() throws IOException {
+    void testParserThrowErrorWhenEmpty() throws IOException {
         InputStream in = new ByteArrayInputStream("".getBytes());
         Exception exception = assertThrows(
                 IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
@@ -51,6 +51,17 @@ class HttpParseRequestLineTest {
                 IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
         );
         assertThat(exception.getMessage()).isEqualTo("Invalid HTTP method");
+    }
+
+    @Test
+    void testParserThrowErrorWhenArrayLengthLessOrEqualsTwo() throws IOException {
+        String testString = "GET / ";
+        InputStream in = new ByteArrayInputStream(testString.getBytes());
+        Exception exception = assertThrows(
+                IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("HTTP Request Line is not long enough");
     }
 
 }

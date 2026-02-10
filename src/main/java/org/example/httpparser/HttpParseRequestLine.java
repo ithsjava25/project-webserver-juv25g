@@ -24,15 +24,18 @@ public class HttpParseRequestLine {
             throw new IOException("HTTP Request Line is Empty");
         }
 
-        String[] requestLineArray = requestLine.split(" ", 3);
+        String[] requestLineArray = requestLine.trim().split(" ", 3);
 
-        setMethod(requestLineArray[0]);
-        if (!getMethod().matches("^[A-Z]+$")){
-            throw new IOException("Invalid HTTP method");
+        if (requestLineArray.length <= 2) {
+            throw new IOException("HTTP Request Line is not long enough");
+        } else {
+            setMethod(requestLineArray[0]);
+            if (!getMethod().matches("^[A-Z]+$")){
+                throw new IOException("Invalid HTTP method");
+            }
+            setUri(requestLineArray[1]);
+            setVersion(requestLineArray[2]);
         }
-        setUri(requestLineArray[1]);
-        setVersion(requestLineArray[2]);
-
 
         logger.info(getMethod());
         logger.info(getUri());
