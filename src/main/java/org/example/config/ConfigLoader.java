@@ -1,5 +1,9 @@
 package org.example.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -41,7 +45,26 @@ public final class ConfigLoader {
         if (!Files.exists(configPath)) {
             return Config.defaults();
         }
-        return Config.defaults();
+        // 2) väljer mapper baserat på filändelse (ska fungera med både JSON och YAML)
+        ObjectMapper objectMapper = createMapperFor(configPath);
+
+    }
+
+    private static ObjectMapper createMapperFor(Path configPath) {
+        String name = configPath.getFileName().toString().toLowerCase();
+
+        ObjectMapper objectMapper;
+        if (name.endsWith(".yml") || name.endsWith(".yaml")) {
+            objectMapper = new ObjectMapper(new YAMLFactory());
+        } else if (name.endsWith(".json")) {
+            objectMapper = new ObjectMapper(); //vanlig json
+        } else  {
+            objectMapper = new ObjectMapper(new YAMLFactory()); //default: försöker med yaml
+        }
+        // - ignorera okända fält för att nya settings utan att krascha äldre builds
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        return objectMapper;
     }
 
     // ======== config-modell ========
