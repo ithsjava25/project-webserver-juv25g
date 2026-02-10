@@ -11,13 +11,15 @@ public class HttpParseRequestLine {
     private String method;
     private String uri;
     private String version;
-
+    private BufferedReader reader;
     Logger logger = Logger.getLogger(HttpParseRequestLine.class.getName());
 
     public void parseHttpRequest(InputStream in) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        if (this.reader == null) {
+            this.reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        }
 
-        String requestLine = br.readLine();
+        String requestLine = reader.readLine();
         if (requestLine == null || requestLine.isEmpty()) {
             throw new IOException("HTTP Request Line is Empty");
         }
