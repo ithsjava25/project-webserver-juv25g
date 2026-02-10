@@ -2,7 +2,7 @@ name: Publish Docker Image to Github Packages on Release
 on:
   release:
     types:
-      - created
+      - published
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -31,5 +31,5 @@ jobs:
           push: true
           platforms: linux/amd64, linux/arm64
           tags:  ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.label }}
+          labels: ${{ steps.meta.outputs.labels }}
 
