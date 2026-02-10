@@ -1,5 +1,9 @@
 package org.example.config;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
+
 /**
  * configloader:
  * - försöker läsa config från fil (yaml/json)
@@ -13,6 +17,32 @@ public final class ConfigLoader {
 
     private ConfigLoader() {}
 
+    /**
+     * laddar config en gång och cachear resultatet.
+     * anropa t.ex. vid uppstart (main) och använd ConfigLoader.get() i resten av appen.
+     */
+    public static Config loadOnce(Path configPath) {
+        if (cached != null) return cached;
+
+        synchronized (ConfigLoader.class) {
+            if (cached != null) return cached;
+
+            cached = load(configPath);
+            return cached;
+        }
+    }
+    /**
+     * försöker läsa config från filsystemet. om den inte finns -> defaults.
+     */
+    public static Config load(Path configPath) {
+        Objects.requireNonNull(configPath, "configPath");
+
+        // 1) om config inte finns: defaults
+        if (!Files.exists(configPath)) {
+            return Config.defaults();
+        }
+        return Config.defaults();
+    }
 
     // ======== config-modell ========
     // Static klasser som endast är till för ConfigLoader (inkapsling)
