@@ -33,7 +33,7 @@ class HttpParseRequestLineTest {
 
 
     @Test
-    void testParserThrowErrorWhenEmpty() throws IOException {
+    void testParserThrowErrorWhenEmpty(){
         InputStream in = new ByteArrayInputStream("".getBytes());
         Exception exception = assertThrows(
                 IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
@@ -43,7 +43,7 @@ class HttpParseRequestLineTest {
     }
 
     @Test
-    void testParserThrowErrorWhenMethodIsInvalid() throws IOException {
+    void testParserThrowErrorWhenMethodIsInvalid(){
         String testString = "get / HTTP/1.1";
         InputStream in = new ByteArrayInputStream(testString.getBytes());
 
@@ -54,7 +54,7 @@ class HttpParseRequestLineTest {
     }
 
     @Test
-    void testParserThrowErrorWhenArrayLengthLessOrEqualsTwo() throws IOException {
+    void testParserThrowErrorWhenArrayLengthLessOrEqualsTwo(){
         String testString = "GET / ";
         InputStream in = new ByteArrayInputStream(testString.getBytes());
         Exception exception = assertThrows(
