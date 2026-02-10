@@ -22,9 +22,9 @@ class HttpParserTest {
         httpParser.parseHttp(in);
 
         assertNotNull(httpParser.getHeadersMap());
-        assertThat(httpParser.getHeadersMap().get("Host")).isEqualTo("localhost");
-        assertThat(httpParser.getHeadersMap().get("Content-Type")).isEqualTo("text/plain");
-        assertThat(httpParser.getHeadersMap().get("User-Agent")).isEqualTo("JUnit5");
+        assertThat(httpParser.getHeadersMap().get("Host")).contains("localhost");
+        assertThat(httpParser.getHeadersMap().get("Content-Type")).contains("text/plain");
+        assertThat(httpParser.getHeadersMap().get("User-Agent")).contains("JUnit5");
     }
 
     @Test

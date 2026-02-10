@@ -11,14 +11,14 @@ import java.util.Map;
 public class HttpParser {
     private boolean debug = false;
     private Map<String, String> headersMap = new HashMap<>();
+    private BufferedReader reader;
     public void parseHttp(InputStream in) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-
-
+        setReader(br);
         Map<String, String> headers = new HashMap<>();
         String headerLine;
 
-        while ((headerLine = br.readLine()) != null) {
+        while ((headerLine = reader.readLine()) != null) {
             if (headerLine.isEmpty()) {
                 break;
             }
@@ -45,4 +45,9 @@ public class HttpParser {
     public Map<String, String> getHeadersMap() {
         return headersMap;
     }
+
+    private void setReader(BufferedReader reader) {
+        this.reader = reader;
+    }
+
 }
