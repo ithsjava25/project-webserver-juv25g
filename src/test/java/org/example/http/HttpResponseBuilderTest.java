@@ -1,9 +1,6 @@
-package org.example.httptest;
+package org.example.http;
 
-import org.example.http.HttpResponseBuilder;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
