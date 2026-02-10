@@ -20,10 +20,10 @@ public class HttpResponseBuilder {
     }
 
     public void setBody(String body) {
-        this.body = body;
+        this.body = body != null ? body : "";
     }
-    public void  setHeaders(Map<String, String> headers) {
-        this.headers = headers;;
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = new LinkedHashMap<>(headers);
     }
 
     public String build(){
