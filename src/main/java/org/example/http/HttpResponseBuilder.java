@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class HttpResponseBuilder {
 
-    private static final String protocol = "HTTP/1.1";
+    private static final String PROTOCOL = "HTTP/1.1";
     private int statusCode = 200;
     private String statusMessage = "OK";
     private String body = "";
@@ -26,9 +26,17 @@ public class HttpResponseBuilder {
         this.headers = new LinkedHashMap<>(headers);
     }
 
+    private static final Map<Integer, String> REASON_PHRASES = Map.of(
+            200, "OK",
+            201, "Created",
+            400, "Bad Request",
+            404, "Not Found",
+            500, "Internal Server Error");
+
     public String build(){
         StringBuilder sb = new StringBuilder();
-        sb.append(protocol).append(" ").append(statusCode).append(" ").append(statusMessage).append(CRLF);
+        String reason = REASON_PHRASES.getOrDefault(statusCode, "OK");
+        sb.append(PROTOCOL).append(" ").append(statusCode).append(" ").append(reason).append(CRLF);
         headers.forEach((k,v) -> sb.append(k).append(": ").append(v).append(CRLF));
         sb.append("Content-Length: ")
                 .append(body.getBytes(StandardCharsets.UTF_8).length);
