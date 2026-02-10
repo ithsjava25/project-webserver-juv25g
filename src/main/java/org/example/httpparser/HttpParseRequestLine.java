@@ -43,7 +43,7 @@ public class HttpParseRequestLine {
         return method;
     }
 
-    public void setMethod(String method) {
+    private void setMethod(String method) {
         this.method = method;
     }
 
@@ -51,7 +51,7 @@ public class HttpParseRequestLine {
         return uri;
     }
 
-    public void setUri(String uri) {
+    private void setUri(String uri) {
         this.uri = uri;
     }
 
@@ -59,7 +59,7 @@ public class HttpParseRequestLine {
         return version;
     }
 
-    public void setVersion(String version) {
+    private void setVersion(String version) {
         this.version = version;
     }
 }
