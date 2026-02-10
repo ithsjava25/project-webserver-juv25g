@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -45,9 +47,17 @@ public final class ConfigLoader {
         if (!Files.exists(configPath)) {
             return Config.defaults();
         }
+
         // 2) väljer mapper baserat på filändelse (ska fungera med både JSON och YAML)
         ObjectMapper objectMapper = createMapperFor(configPath);
 
+        // 3) läsning och parsning
+        try (InputStream stream = Files.newInputStream(configPath)){
+            Config config = objectMapper.readValue(stream, Config.class);
+            return config.withDefaultsApplied();
+        } catch (IOException e){
+            throw new IllegalStateException("failed to read config file" + configPath.toAbsolutePath(), e);
+        }
     }
 
     private static ObjectMapper createMapperFor(Path configPath) {
@@ -66,9 +76,7 @@ public final class ConfigLoader {
 
         return objectMapper;
     }
-
     // ======== config-modell ========
-    // Static klasser som endast är till för ConfigLoader (inkapsling)
 
     public static final class Config {
         public ServerConfig server;
@@ -80,8 +88,23 @@ public final class ConfigLoader {
             config.logging = LoggingConfig.defaults();
             return config;
         }
+
+        /**
+         * applicerar defaults på null-delar (om t.ex. logging-sektionen saknas i filen).
+         */
+        public Config withDefaultsApplied() {
+            if (this.server == null) this.server = ServerConfig.defaults();
+            else this.server.applyDefaults();
+
+            if (this.logging == null) this.logging = LoggingConfig.defaults();
+            else this.logging.applyDefaults();
+
+            return this;
+        }
     }
 
+    // ======== config-modell ========
+    // Static klasser som endast är till för ConfigLoader (inkapsling)
     public static final class ServerConfig {
         public Integer port;     // Integer så vi kan upptäcka "saknas" (null) och sätta default
         public String rootDir;
