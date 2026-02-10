@@ -34,7 +34,7 @@ public class HttpResponseBuilderTest {
     }
 
     // Verifies that Content-Length is calculated using UTF-8 byte length!
-
+    //
     @Test
     public void build_handlesUtf8ContentLength() {
         HttpResponseBuilder builder = new HttpResponseBuilder();
