@@ -6,7 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,16 +16,10 @@ class HttpParserTest {
 
     @Test
     void TestHttpParserForHeaders() throws IOException {
-        String testInput = "GET /index.html HTTP/1.1\r\n" +
-                "Host: localhost\r\n" +
-                "Content-Type: text/plain\r\n" +
-                "User-Agent: JUnit5\r\n" +
-                "\r\n";
+        String testInput = "GET /index.html HTTP/1.1\r\nHost: localhost\r\nContent-Type: text/plain\r\nUser-Agent: JUnit5\r\n\r\n";
         InputStream in = new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
 
         httpParser.parseHttp(in);
-
-        Map<String, String> content = httpParser.getHeadersMap();
 
         assertNotNull(httpParser.getHeadersMap());
         assertThat(httpParser.getHeadersMap().get("Host")).isEqualTo("localhost");
@@ -43,10 +37,7 @@ class HttpParserTest {
 
     @Test
     void testParseHttp_InvalidHeaderLine() throws IOException {
-        String rawInput = "Host: localhost\r\n" +
-                "InvalidLineWithoutColon\r\n" +
-                "Accept: */*\r\n" +
-                "\r\n";
+        String rawInput = "Host: localhost\r\n InvalidLineWithoutColon\r\n Accept: */*\r\n\r\n";
 
         InputStream in = new ByteArrayInputStream(rawInput.getBytes(StandardCharsets.UTF_8));
         httpParser.parseHttp(in);
