@@ -13,8 +13,9 @@ public class HttpParser {
     private Map<String, String> headersMap = new HashMap<>();
     private BufferedReader reader;
     public void parseHttp(InputStream in) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-        setReader(br);
+        if (this.reader == null) {
+            this.reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        }
         Map<String, String> headers = new HashMap<>();
         String headerLine;
 
@@ -46,8 +47,6 @@ public class HttpParser {
         return headersMap;
     }
 
-    private void setReader(BufferedReader reader) {
-        this.reader = reader;
-    }
+
 
 }
