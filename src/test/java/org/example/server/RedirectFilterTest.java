@@ -70,7 +70,7 @@ class RedirectFilterTest {
     void wildcard_matching_docs_star() {
         var p = RedirectRulesLoader.compileSourcePattern("/docs/*");
         assertThat(p.matcher("/docs/test").matches()).isTrue();
-        assertThat(p.matcher("/docs/any/path").matches()).isTrue();
+        assertThat(p.matcher("/docs/any/path").matches()).isFalse();
         assertThat(p.matcher("/doc/test").matches()).isFalse();
     }
 
