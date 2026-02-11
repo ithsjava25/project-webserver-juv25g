@@ -11,19 +11,22 @@ public class MimeTypeDetector {
         initializeMimeTypes();
     }
 
+
     private void initializeMimeTypes(){
-        mimeTypes.put(".html", "text/html");
-        mimeTypes.put(".css", "text/css");
-        mimeTypes.put("txt", "text/plain");
+        mimeTypes.put("html", "text/html");
         mimeTypes.put("css", "text/css");
+        mimeTypes.put("txt", "text/plain");
         mimeTypes.put("json", "application/json");
         mimeTypes.put("pdf", "application/pdf");
         mimeTypes.put("jpg", "image/jpeg");
+        mimeTypes.put("jpeg", "image/jpeg");
         mimeTypes.put("png", "image/png");
         mimeTypes.put("gif", "image/gif");
         mimeTypes.put("mp4", "video/mp4");
         mimeTypes.put("mp3", "audio/mpeg");
+        mimeTypes.put("zip", "application/zip");
     }
+
     public String detect(String filename){
         int lastDot = filename.lastIndexOf('.');
         if (lastDot == -1){
