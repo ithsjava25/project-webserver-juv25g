@@ -31,6 +31,13 @@ class HttpParseRequestLineTest {
         assertThat(httpParseRequestLine.getVersion()).isEqualTo("HTTP/1.1");
     }
 
+    @Test
+    void testParserThrowErrorWhenNull(){
+        assertThrows(
+                NullPointerException.class, () -> httpParseRequestLine.parseHttpRequest(new ByteArrayInputStream(null))
+        );
+    }
+
 
     @Test
     void testParserThrowErrorWhenEmpty(){
@@ -39,7 +46,7 @@ class HttpParseRequestLineTest {
                 IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
         );
 
-        assertThat(exception.getMessage()).isEqualTo("HTTP Request Line is Empty");
+        assertThat(exception.getMessage()).isEqualTo("HTTP Request Line is Null or Empty");
     }
 
     @Test

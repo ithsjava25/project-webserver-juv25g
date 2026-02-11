@@ -21,7 +21,7 @@ public class HttpParseRequestLine {
 
         String requestLine = reader.readLine();
         if (requestLine == null || requestLine.isEmpty()) {
-            throw new IOException("HTTP Request Line is Empty");
+            throw new IOException("HTTP Request Line is Null or Empty");
         }
 
         String[] requestLineArray = requestLine.trim().split(" ", 3);
