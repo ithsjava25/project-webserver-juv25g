@@ -24,7 +24,7 @@ public class HttpResponseBuilderTest {
         String result = builder.build();
 
         assertThat(result).contains("HTTP/1.1 200 OK");
-        assertThat(result).contains("Content-Length");
+        assertThat(result).contains("Content-Length: 5");
         assertThat(result).contains("\r\n\r\n");
         assertThat(result).contains("Hello");
 
