@@ -48,7 +48,7 @@ public final class ConfigLoader {
         try (InputStream stream = Files.newInputStream(configPath)){
             AppConfig config = objectMapper.readValue(stream, AppConfig.class);
             return config == null ? AppConfig.defaults() : config;
-        } catch (IOException e){
+        } catch (Exception e){
             throw new IllegalStateException("failed to read config file " + configPath.toAbsolutePath(), e);
         }
     }
@@ -65,5 +65,8 @@ public final class ConfigLoader {
             return YAMLMapper.builder(new YAMLFactory()).build();
         }
     }
-}
 
+    static void resetForTests() {
+        cached = null;
+    }
+}
