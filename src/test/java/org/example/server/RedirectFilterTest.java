@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RedirectFilterTest {
 
@@ -72,4 +73,19 @@ class RedirectFilterTest {
         assertThat(p.matcher("/docs/any/path").matches()).isTrue();
         assertThat(p.matcher("/doc/test").matches()).isFalse();
     }
+
+    @Test
+    void regex_matching_via_loader_prefix() {
+        var p = RedirectRulesLoader.compileSourcePattern("regex:^/docs/(v1|v2)$");
+        assertThat(p.matcher("/docs/v1").matches()).isTrue();
+        assertThat(p.matcher("/docs/v2").matches()).isTrue();
+        assertThat(p.matcher("/docs/v3").matches()).isFalse();
+    }
+
+    @Test
+    void redirect_rule_rejects_invalid_status_code() {
+        assertThatThrownBy(() -> new RedirectRule(Pattern.compile("^/x$"), "/y", 307))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }
+
