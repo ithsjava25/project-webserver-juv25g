@@ -1,5 +1,6 @@
 package org.example.server;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class RedirectRule {
@@ -8,8 +9,11 @@ public final class RedirectRule {
     private final int statusCode;
 
     public RedirectRule(Pattern sourcePattern, String targetUrl, int statusCode) {
-        this.sourcePattern = sourcePattern;
-        this.targetUrl = targetUrl;
+        this.sourcePattern = Objects.requireNonNull(sourcePattern, "sourcePattern");
+        this.targetUrl = Objects.requireNonNull(targetUrl, "targetUrl");
+        if (statusCode != 301 && statusCode != 302) {
+            throw new IllegalArgumentException("statusCode must be 301 or 302");
+        }
         this.statusCode = statusCode;
     }
 
@@ -30,3 +34,4 @@ public final class RedirectRule {
                 '}';
     }
 }
+
