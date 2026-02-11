@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class HttpParser {
     private boolean debug = false;
-    private Map<String, String> headersMap = new HashMap<>();
+    private Map<String, String> headersMap;
     private BufferedReader reader;
     public void parseHttp(InputStream in) throws IOException {
         if (this.reader == null) {
