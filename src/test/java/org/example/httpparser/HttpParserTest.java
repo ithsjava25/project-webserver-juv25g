@@ -22,6 +22,7 @@ class HttpParserTest {
         httpParser.parseHttp(in);
 
         assertNotNull(httpParser.getHeadersMap());
+        assertThat(httpParser.getHeadersMap().size()).isEqualTo(3);
         assertThat(httpParser.getHeadersMap().get("Host")).contains("localhost");
         assertThat(httpParser.getHeadersMap().get("Content-Type")).contains("text/plain");
         assertThat(httpParser.getHeadersMap().get("User-Agent")).contains("JUnit5");
