@@ -2,21 +2,17 @@ package org.example.httpparser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 abstract class HttpParseRequestLine {
     private String method;
     private String uri;
     private String version;
-    private BufferedReader reader;
     private boolean debug = false;
     private static final Logger logger = Logger.getLogger(HttpParseRequestLine.class.getName());
 
     public void parseHttpRequest(BufferedReader br) throws IOException {
-        reader = br;
+        BufferedReader reader = br;
         String requestLine = reader.readLine();
         if (requestLine == null || requestLine.isEmpty()) {
             throw new IOException("HTTP Request Line is Null or Empty");
