@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HttpParseRequestLineTest {
@@ -33,9 +34,7 @@ class HttpParseRequestLineTest {
 
     @Test
     void testParserThrowErrorWhenNull(){
-        assertThrows(
-                NullPointerException.class, () -> httpParseRequestLine.parseHttpRequest(null)
-        );
+        assertThatThrownBy(() -> httpParseRequestLine.parseHttpRequest(null)).isInstanceOf(NullPointerException.class);
     }
 
 

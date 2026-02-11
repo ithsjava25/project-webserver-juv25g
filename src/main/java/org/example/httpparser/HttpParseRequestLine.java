@@ -12,7 +12,8 @@ public class HttpParseRequestLine {
     private String uri;
     private String version;
     private BufferedReader reader;
-    Logger logger = Logger.getLogger(HttpParseRequestLine.class.getName());
+    private boolean debug = false;
+    private static final Logger logger = Logger.getLogger(HttpParseRequestLine.class.getName());
 
     public void parseHttpRequest(InputStream in) throws IOException {
         if (this.reader == null) {
@@ -37,9 +38,11 @@ public class HttpParseRequestLine {
             setVersion(requestLineArray[2]);
         }
 
-        logger.info(getMethod());
-        logger.info(getUri());
-        logger.info(getVersion());
+        if(debug) {
+            logger.info(getMethod());
+            logger.info(getUri());
+            logger.info(getVersion());
+        }
     }
 
 
