@@ -8,7 +8,6 @@ public class HttpResponseBuilder {
 
     private static final String PROTOCOL = "HTTP/1.1";
     private int statusCode = 200;
-    private String statusMessage = "OK";
     private String body = "";
     private Map<String, String> headers = new LinkedHashMap<>();
 

@@ -4,18 +4,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class HttpResponseBuilderTest {
-
+    class HttpResponseBuilderTest {
 
     /**
      * Verifies that build produces a valid HTTP response string!
-
      *  Status line is present
      *  Content-Length header is generated
      *  The response body is included
      */
+
     @Test
-    public void build_returnsValidHttpResponse() {
+    void build_returnsValidHttpResponse() {
 
         HttpResponseBuilder builder = new HttpResponseBuilder();
 
@@ -33,7 +32,7 @@ public class HttpResponseBuilderTest {
     // Verifies that Content-Length is calculated using UTF-8 byte length!
     //
     @Test
-    public void build_handlesUtf8ContentLength() {
+    void build_handlesUtf8ContentLength() {
         HttpResponseBuilder builder = new HttpResponseBuilder();
 
         builder.setBody("å");
