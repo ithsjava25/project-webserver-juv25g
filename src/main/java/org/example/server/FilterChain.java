@@ -3,10 +3,6 @@ package org.example.server;
 import java.util.Objects;
 
 public final class FilterChain {
-    @FunctionalInterface
-    public interface TerminalHandler {
-        void handle(HttpRequest request, HttpResponse response);
-    }
 
     private final HttpFilter[] filters;
     private final TerminalHandler terminal;
