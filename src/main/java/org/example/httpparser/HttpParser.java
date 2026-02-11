@@ -8,15 +8,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpParser {
+public class HttpParser extends HttpParseRequestLine {
     private boolean debug = false;
     private Map<String, String> headersMap = new HashMap<>();
     private BufferedReader reader;
-    public void parseHttp(InputStream in) throws IOException {
+
+    protected void setReader(InputStream in) {
         if (this.reader == null) {
             this.reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
         }
+    }
 
+    public void parseHttp() throws IOException {
         String headerLine;
 
         while ((headerLine = reader.readLine()) != null) {
@@ -42,8 +45,16 @@ public class HttpParser {
         }
     }
 
+
+    public void parseRequest() throws IOException {
+        parseHttpRequest(reader);
+    }
+
     public Map<String, String> getHeadersMap() {
         return headersMap;
     }
 
+    public BufferedReader getHeaderReader() {
+        return reader;
+    }
 }
