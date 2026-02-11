@@ -37,18 +37,20 @@ public class HttpResponseBuilder {
             500, "Internal Server Error");
     public String build(){
         StringBuilder sb = new StringBuilder();
-        int contentLenght = 0;
-        if(body.getBytes(StandardCharsets.UTF_8).length == 0){
-            contentLenght = bytebody.length;
+        int contentLength;
+        if(body.isEmpty() && bytebody != null){
+            contentLength = bytebody.length;
             setBody(new String(bytebody, StandardCharsets.UTF_8));
         }else{
-            contentLenght = body.getBytes(StandardCharsets.UTF_8).length;
+            contentLength = body.getBytes(StandardCharsets.UTF_8).length;
         }
+
+
         String reason = REASON_PHRASES.getOrDefault(statusCode, "OK");
         sb.append(PROTOCOL).append(" ").append(statusCode).append(" ").append(reason).append(CRLF);
         headers.forEach((k,v) -> sb.append(k).append(": ").append(v).append(CRLF));
         sb.append("Content-Length: ")
-                .append(contentLenght);
+                .append(contentLength);
         sb.append(CRLF);
         sb.append("Connection: close").append(CRLF);
         sb.append(CRLF);
