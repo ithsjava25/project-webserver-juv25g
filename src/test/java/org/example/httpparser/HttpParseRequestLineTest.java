@@ -3,9 +3,7 @@ package org.example.httpparser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -24,8 +22,8 @@ class HttpParseRequestLineTest {
         String testString = "GET / HTTP/1.1";
 
         InputStream in = new ByteArrayInputStream(testString.getBytes());
-
-        httpParseRequestLine.parseHttpRequest(in);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        httpParseRequestLine.parseHttpRequest(reader);
 
         assertThat(httpParseRequestLine.getMethod()).isEqualTo("GET");
         assertThat(httpParseRequestLine.getUri()).isEqualTo("/");
@@ -41,8 +39,9 @@ class HttpParseRequestLineTest {
     @Test
     void testParserThrowErrorWhenEmpty(){
         InputStream in = new ByteArrayInputStream("".getBytes());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         Exception exception = assertThrows(
-                IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
+                IOException.class, () -> httpParseRequestLine.parseHttpRequest(reader)
         );
 
         assertThat(exception.getMessage()).isEqualTo("HTTP Request Line is Null or Empty");
@@ -52,9 +51,10 @@ class HttpParseRequestLineTest {
     void testParserThrowErrorWhenMethodIsInvalid(){
         String testString = "get / HTTP/1.1";
         InputStream in = new ByteArrayInputStream(testString.getBytes());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
         Exception exception = assertThrows(
-                IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
+                IOException.class, () -> httpParseRequestLine.parseHttpRequest(reader)
         );
         assertThat(exception.getMessage()).isEqualTo("Invalid HTTP method");
     }
@@ -63,8 +63,9 @@ class HttpParseRequestLineTest {
     void testParserThrowErrorWhenArrayLengthLessOrEqualsTwo(){
         String testString = "GET / ";
         InputStream in = new ByteArrayInputStream(testString.getBytes());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         Exception exception = assertThrows(
-                IOException.class, () -> httpParseRequestLine.parseHttpRequest(in)
+                IOException.class, () -> httpParseRequestLine.parseHttpRequest(reader)
         );
 
         assertThat(exception.getMessage()).isEqualTo("HTTP Request Line is not long enough");
