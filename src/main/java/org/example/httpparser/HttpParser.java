@@ -32,7 +32,7 @@ public class HttpParser {
             String key = headerLine.substring(0, valueSeparator).trim();
             String value = headerLine.substring(valueSeparator + 1).trim();
 
-            headers.put(key, value);
+            headers.merge(key, value, (existing, incoming) -> existing +", " + incoming);
         }
         headersMap = headers;
         if (debug) {
@@ -46,7 +46,5 @@ public class HttpParser {
     public Map<String, String> getHeadersMap() {
         return headersMap;
     }
-
-
 
 }
