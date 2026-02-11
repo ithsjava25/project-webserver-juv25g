@@ -36,7 +36,7 @@ public final class RedirectRulesLoader {
         for (int i = 0; i < wildcard.length(); i++) {
             char c = wildcard.charAt(i);
             if (c == '*') {
-                sb.append(".*");
+                sb.append("[^/]*");
             } else {
                 sb.append(Pattern.quote(String.valueOf(c)));
             }
