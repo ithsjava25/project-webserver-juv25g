@@ -54,19 +54,24 @@ public final class MimeTypeDetector {
      * @param filename the name of the file (t.ex., "index.html", "style.css")
      * @return the MIME type string (t.ex, "text/html; charset=UTF-8")
      */
+
+
     public static String detectMimeType(String filename) {
+
+        String octet = "application/octet-stream";
+
         if (filename == null || filename.isEmpty()) {
-            return "application/octet-stream";
+            return octet;
         }
 
         // Find the last dot to get extension
         int lastDot = filename.lastIndexOf('.');
         if (lastDot == -1 || lastDot == filename.length() - 1) {
             // No extension or dot at end
-            return "application/octet-stream";
+            return octet;
         }
 
         String extension = filename.substring(lastDot).toLowerCase();
-        return MIME_TYPES.getOrDefault(extension, "application/octet-stream");
+        return MIME_TYPES.getOrDefault(extension, octet);
     }
 }
