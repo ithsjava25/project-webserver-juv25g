@@ -22,7 +22,7 @@ public class FilterChainImpl implements FilterChain {
     }
 
     @Override
-    public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
+    public void doFilter(HttpRequest request, HttpResponseBuilder response) {
         if (index < filters.size()) {
             Filter next = filters.get(index++);
             next.doFilter(request, response, this);
