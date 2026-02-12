@@ -6,5 +6,5 @@ import org.example.httpparser.HttpRequest;
 
 public interface FilterChain {
 
-    void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain);
+    void doFilter(HttpRequest request, HttpResponseBuilder response);
 }
