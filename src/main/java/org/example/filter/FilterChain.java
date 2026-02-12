@@ -1,8 +1,8 @@
 package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
 
-import java.net.http.HttpRequest;
 
 public interface FilterChain {
 
