@@ -30,7 +30,7 @@ public class TcpServer {
         try (ConnectionHandler connectionHandler = new ConnectionHandler(client)) {
             connectionHandler.runConnectionHandler();
         } catch (Exception e) {
-            throw new IllegalThreadStateException("Error with connectionHandler" + e);
+            throw new RuntimeException("Error handling client connection " + e);
         }
     }
 }
