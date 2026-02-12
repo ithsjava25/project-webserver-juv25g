@@ -19,6 +19,7 @@ public class StaticFileHandler {
 
         File file = new File(WEB_ROOT, uri);
         fileBytes = Files.readAllBytes(file.toPath());
+
     }
 
     public void sendGetRequest(OutputStream outputStream, String uri) throws IOException{

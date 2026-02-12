@@ -19,10 +19,18 @@ public class TcpServer {
             while (true) {
                 Socket clientSocket = serverSocket.accept(); // block
                 System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
-                clientSocket.close();
+                Thread.ofVirtual().start(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to start TCP server", e);
+        }
+    }
+
+    private void handleClient(Socket client) {
+        try (ConnectionHandler connectionHandler = new ConnectionHandler(client)) {
+            connectionHandler.runConnectionHandler();
+        } catch (Exception e) {
+            throw new IllegalThreadStateException("Error with connectionHandler" + e);
         }
     }
 }
