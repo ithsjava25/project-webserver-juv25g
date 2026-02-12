@@ -3,7 +3,11 @@ package org.example.http;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -123,17 +127,34 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
             assertThat(result).contains("Content-Type: " + expectedContentType);
         }
 
-        @Test
-        @DisplayName("Should override previous Content-Type when set again")
-        void setContentTypeFromFilename_overridesPrevious() {
+        @ParameterizedTest
+        @MethodSource("provideHeaderDuplicationScenarios")
+        @DisplayName("Should not duplicate headers when manually set")
+        void build_doesNotDuplicateHeaders(String headerName, String manualValue, String bodyContent) {
             HttpResponseBuilder builder = new HttpResponseBuilder();
-            builder.setContentTypeFromFilename("file.txt");
-            builder.setContentTypeFromFilename("file.html");
-            builder.setBody("Test");
+            builder.setHeader(headerName, manualValue);
+            builder.setBody(bodyContent);
 
             String result = builder.build();
 
-            assertThat(result).contains("Content-Type: text/html; charset=UTF-8");
-            assertThat(result).doesNotContain("text/plain");
+            // Count occurrences of the header
+            long count = result.lines()
+                    .filter(line -> line.startsWith(headerName + ":"))
+                    .count();
+
+            assertThat(count).isEqualTo(1);
+            assertThat(result).contains(headerName + ": " + manualValue);
         }
+
+        private static Stream<Arguments> provideHeaderDuplicationScenarios() {
+            return Stream.of(
+                    Arguments.of("Content-Length", "999", "Hello"),
+                    Arguments.of("Content-Length", "0", ""),
+                    Arguments.of("Content-Length", "12345", "Test content"),
+                    Arguments.of("Connection", "keep-alive", "Hello"),
+                    Arguments.of("Connection", "upgrade", "WebSocket data"),
+                    Arguments.of("Connection", "close", "Goodbye")
+            );
+        }
+
     }

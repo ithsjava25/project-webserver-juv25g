@@ -41,17 +41,34 @@ public class HttpResponseBuilder {
             404, "Not Found",
             500, "Internal Server Error");
 
-    public String build(){
+    public String build() {
         StringBuilder sb = new StringBuilder();
         String reason = REASON_PHRASES.getOrDefault(statusCode, "OK");
+
+        // Status line
         sb.append(PROTOCOL).append(" ").append(statusCode).append(" ").append(reason).append(CRLF);
-        headers.forEach((k,v) -> sb.append(k).append(": ").append(v).append(CRLF));
-        sb.append("Content-Length: ")
-                .append(body.getBytes(StandardCharsets.UTF_8).length);
+
+        // User-defined headers
+        headers.forEach((k, v) -> sb.append(k).append(": ").append(v).append(CRLF));
+
+        // Only append Content-Length if not already set
+        if (!headers.containsKey("Content-Length")) {
+            sb.append("Content-Length: ")
+                    .append(body.getBytes(StandardCharsets.UTF_8).length)
+                    .append(CRLF);
+        }
+
+        // Only append Connection if not already set
+        if (!headers.containsKey("Connection")) {
+            sb.append("Connection: close").append(CRLF);
+        }
+
+        // Blank line before body
         sb.append(CRLF);
-        sb.append("Connection: close").append(CRLF);
-        sb.append(CRLF);
+
+        // Body
         sb.append(body);
+
         return sb.toString();
     }
 }
