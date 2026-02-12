@@ -1,5 +1,5 @@
 package org.example.http;
-//
+
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,7 +13,6 @@ public class HttpResponseBuilder {
 
     private static final String CRLF = "\r\n";
 
-
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
@@ -21,8 +20,18 @@ public class HttpResponseBuilder {
     public void setBody(String body) {
         this.body = body != null ? body : "";
     }
+
     public void setHeaders(Map<String, String> headers) {
         this.headers = new LinkedHashMap<>(headers);
+    }
+
+    public void setHeader(String name, String value) {
+        this.headers.put(name, value);
+    }
+
+    public void setContentTypeFromFilename(String filename) {
+        String mimeType = MimeTypeDetector.detectMimeType(filename);
+        setHeader("Content-Type", mimeType);
     }
 
     private static final Map<Integer, String> REASON_PHRASES = Map.of(
@@ -44,7 +53,5 @@ public class HttpResponseBuilder {
         sb.append(CRLF);
         sb.append(body);
         return sb.toString();
-
     }
-
 }
