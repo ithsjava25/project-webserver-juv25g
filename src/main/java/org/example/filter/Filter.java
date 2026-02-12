@@ -2,7 +2,7 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 
-import java.net.http.HttpRequest;
+import org.example.httpparser.HttpRequest;
 
 public interface Filter {
     void init();

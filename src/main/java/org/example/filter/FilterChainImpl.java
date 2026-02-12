@@ -1,9 +1,9 @@
 package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
 
-import java.io.IOException;
-import java.net.http.HttpRequest;
+
 import java.util.List;
 
 /*
