@@ -13,9 +13,9 @@ public record AppConfig(
     }
 
     public AppConfig withDefaultsApplied() {
-        ServerConfig s = (server == null ? ServerConfig.defaults() : server.withDefaultsApplied());
-        LoggingConfig l = (logging == null ? LoggingConfig.defaults() : logging.withDefaultsApplied());
-        return new AppConfig(s, l);
+        ServerConfig serverConfig = (server == null ? ServerConfig.defaults() : server.withDefaultsApplied());
+        LoggingConfig loggingConfig = (logging == null ? LoggingConfig.defaults() : logging.withDefaultsApplied());
+        return new AppConfig(serverConfig, loggingConfig);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -29,8 +29,8 @@ public record AppConfig(
 
         public ServerConfig withDefaultsApplied() {
             int p = (port == null ? 8080 : port);
-            String r = (rootDir == null || rootDir.isBlank()) ? "./www" : rootDir;
-            return new ServerConfig(p, r);
+            String rd = (rootDir == null || rootDir.isBlank()) ? "./www" : rootDir;
+            return new ServerConfig(p, rd);
         }
     }
 

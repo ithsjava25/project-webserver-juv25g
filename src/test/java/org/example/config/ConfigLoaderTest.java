@@ -115,8 +115,8 @@ class ConfigLoaderTest {
     }
 
     @Test
-    @DisplayName("Should fail fast when configuration file is invalid")
-    void invalid_yaml_fails_fast() throws Exception {
+    @DisplayName("Should fail when configuration file is invalid")
+    void invalid_yaml_fails() throws Exception {
         Path configFile = tempDir.resolve("broken.yml");
         Files.writeString(configFile, "server:\n  port 8080\n"); // saknar ':' efter port
 
