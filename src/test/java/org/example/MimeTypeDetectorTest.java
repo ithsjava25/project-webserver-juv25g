@@ -61,7 +61,7 @@ class MimeTypeDetectorTest {
     }
 
     @Test
-    void detectCasInsensitiveExtension() {
+    void detectCaseInsensitiveExtension() {
         String result1 = detector.detect("image.JPG");
         String result2 = detector.detect("image.jpg");
         assertThat(result1).isEqualTo(result2).isEqualTo("image/jpeg");
