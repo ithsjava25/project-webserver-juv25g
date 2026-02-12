@@ -1,0 +1,66 @@
+package org.example.httpparser;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.logging.Logger;
+
+abstract class HttpParseRequestLine {
+    private String method;
+    private String uri;
+    private String version;
+    private boolean debug = false;
+    private static final Logger logger = Logger.getLogger(HttpParseRequestLine.class.getName());
+
+    public void parseHttpRequest(BufferedReader br) throws IOException {
+        BufferedReader reader = br;
+        String requestLine = reader.readLine();
+        if (requestLine == null || requestLine.isEmpty()) {
+            throw new IOException("HTTP Request Line is Null or Empty");
+        }
+
+        String[] requestLineArray = requestLine.trim().split(" ", 3);
+
+        if (requestLineArray.length <= 2) {
+            throw new IOException("HTTP Request Line is not long enough");
+        } else {
+            setMethod(requestLineArray[0]);
+            if (!getMethod().matches("^[A-Z]+$")){
+                throw new IOException("Invalid HTTP method");
+            }
+            setUri(requestLineArray[1]);
+            setVersion(requestLineArray[2]);
+        }
+
+        if(debug) {
+            logger.info(getMethod());
+            logger.info(getUri());
+            logger.info(getVersion());
+        }
+    }
+
+
+
+    public String getMethod() {
+        return method;
+    }
+
+    private void setMethod(String method) {
+        this.method = method;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    private void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    private void setVersion(String version) {
+        this.version = version;
+    }
+}
