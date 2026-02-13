@@ -1,0 +1,6 @@
+server:
+  port: 8080
+  rootDir: ./www
+
+logging:
+  level: INFO
