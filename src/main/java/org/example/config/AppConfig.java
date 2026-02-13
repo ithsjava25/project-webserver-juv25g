@@ -18,6 +18,24 @@ public record AppConfig(
         return new AppConfig(serverConfig, loggingConfig);
     }
 
+    public AppConfig withOverrides(CliOverride override) {
+        if (override == null) return this;
+
+        ServerConfig baseServer = this.server();
+        LoggingConfig baseLogging = this.logging();
+
+        ServerConfig  updatedServer = new ServerConfig(
+                override.port() != null ? override.port() : baseServer.port(),
+                (override.rootDir() != null && !override.rootDir().isBlank()) ? override.rootDir() : baseServer.rootDir()
+        );
+
+        LoggingConfig updatedLogging = new LoggingConfig(
+                (override.logLevel() != null && !override.logLevel().isBlank()) ? override.logLevel() : baseLogging.level()
+        );
+
+        return new AppConfig(updatedServer, updatedLogging);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ServerConfig(
             @JsonProperty("port") Integer port,
@@ -49,5 +67,8 @@ public record AppConfig(
             String lvl = (level == null || level.isBlank()) ? "INFO" : level;
             return new LoggingConfig(lvl);
         }
+
+
+
     }
 }

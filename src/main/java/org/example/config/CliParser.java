@@ -1,6 +1,6 @@
 package org.example.config;
 
-public class CliParser {
+public final class CliParser {
     public CliOverride parse (String[] args)  {
         Integer port = null;
         String rootDir = null;
