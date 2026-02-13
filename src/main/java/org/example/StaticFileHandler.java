@@ -32,7 +32,11 @@ public class StaticFileHandler {
             statusCode = 200;
         } else {
             File errorFile = new File(WEB_ROOT, "pageNotFound.html");
-            fileBytes = Files.readAllBytes(errorFile.toPath());
+            if(errorFile.exists()) {
+                fileBytes = Files.readAllBytes(errorFile.toPath());
+            } else {
+                fileBytes = "404 Not Found".getBytes();
+            }
             statusCode = 404;
         }
     }
