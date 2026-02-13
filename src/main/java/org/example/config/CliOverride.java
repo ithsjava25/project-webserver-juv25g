@@ -1,16 +1,24 @@
 package org.example.config;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+public record CliOverride(
+        Integer port,
+        String rootDir,
+        String logLevel
+) {
 
-public class CliOverride {
-    private Integer port;
-    private String rootDir;
-    private String logLevel;
+    public static CliOverride empty() {
+        return new CliOverride(null, null, null);
+    }
+
+    public boolean isEmpty() {
+        return port == null && rootDir == null && logLevel == null;
+    }
+
 
     public CliOverride parse (String[] args)  {
-        CliOverride override = new CliOverride();
+        Integer port = null;
+        String rootDir = null;
+        String logLevel = null;
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -31,13 +39,13 @@ public class CliOverride {
             String value = args[++i];
 
             switch (key) {
-                case "port" -> override.port = parsePort(value);
-                case "rootDir" -> override.rootDir = value;
-                case "logLevel" -> override.logLevel = value;
+                case "port" -> port = parsePort(value);
+                case "rootDir" -> rootDir = value;
+                case "logLevel" -> logLevel = value;
                 default -> throw new IllegalArgumentException("unknown option '--" + key + "' (see --help)");
             }
         }
-        return override;
+        return new CliOverride(port, rootDir, logLevel);
     }
 
     public static int parsePort  (String input) {
@@ -64,6 +72,4 @@ public class CliOverride {
                   --port 8080 --rootDir ./www --logLevel INFO
                 """;
     }
-
-
 }
