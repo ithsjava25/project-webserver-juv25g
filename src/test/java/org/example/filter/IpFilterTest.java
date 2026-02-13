@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class IpFilterTest {
 
@@ -53,11 +54,12 @@ class IpFilterTest {
         ipFilter.doFilter(request, response, mockChain);
 
         // ASSERT
-        assertThat(chainCalled).isFalse();
-
         String result = response.build();
-        assertThat(result).contains("403");
-        assertThat(result).contains("Forbidden");
+        assertAll(
+                () -> assertThat(chainCalled).isFalse(),
+                () -> assertThat(result).contains("403"),
+                () -> assertThat(result).contains("Forbidden")
+        );
     }
 
     @Test
@@ -110,11 +112,12 @@ class IpFilterTest {
         ipFilter.doFilter(request, response, mockChain);
 
         // ASSERT
-        assertThat(chainCalled).isFalse();
-
         String result = response.build();
-        assertThat(result).contains("400");
-        assertThat(result).contains("Bad Request");
+        assertAll(
+                () -> assertThat(chainCalled).isFalse(),
+                () -> assertThat(result).contains("400"),
+                () -> assertThat(result).contains("Bad Request")
+        );
     }
 
     private HttpRequest createRequestWithIp(String ip) {
