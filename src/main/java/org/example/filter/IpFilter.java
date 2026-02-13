@@ -9,6 +9,7 @@ import java.util.Set;
 public class IpFilter implements Filter {
 
     private final Set<String> blockedIps = new HashSet<>();
+    private final Set<String> allowedIps = new HashSet<>();
     private FilterMode mode = FilterMode.BLOCKLIST;
 
     public enum FilterMode {
@@ -47,4 +48,6 @@ public class IpFilter implements Filter {
     public void addBlockedIp(String ip) {
         blockedIps.add(ip);
     }
+
+    public void addAllowedIp(String ip) { allowedIps.add(ip); }
 }

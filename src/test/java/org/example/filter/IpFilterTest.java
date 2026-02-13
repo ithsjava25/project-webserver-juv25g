@@ -60,6 +60,22 @@ class IpFilterTest {
         assertThat(result).contains("Forbidden");
     }
 
+    @Test
+    void testAllowListMode_AllowsWhitelistedIp() {
+        // ARRANGE
+        ipFilter.setMode(IpFilter.FilterMode.ALLOWLIST);
+        ipFilter.addAllowedIp("10.0.0.1");
+        ipFilter.init();
+
+        HttpRequest request = createRequestWithIp("10.0.0.1");
+
+        // ACT
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        assertThat(chainCalled).isTrue();
+    }
+
     private HttpRequest createRequestWithIp(String ip) {
         HttpRequest request = new HttpRequest(
                 "GET",
