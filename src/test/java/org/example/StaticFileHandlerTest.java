@@ -9,6 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit test class for verifying the behavior of the StaticFileHandler class.
+ *
+ * This test class ensures that StaticFileHandler correctly handles GET requests
+ * for static files, including both cases where the requested file exists and
+ * where it does not. Temporary directories and files are utilized in tests to
+ * ensure no actual file system dependencies during test execution.
+ *
+ * Key functional aspects being tested include:
+ * - Correct response status code and content for an existing file.
+ * - Correct response status code and fallback behavior for a missing file.
+ */
 class StaticFileHandlerTest {
 
     //Junit creates a temporary folder which can be filled with temporary files that gets removed after tests
@@ -37,7 +49,7 @@ class StaticFileHandlerTest {
         assertTrue(response.contains("HTTP/1.1 200 OK")); // Assert the status
         assertTrue(response.contains("Hello Test")); //Assert the content in the file
 
-
+        assertTrue(response.contains("Content-Type: text/html; charset=utf-8")); // Verify the correct Content-type header
 
     }
 
