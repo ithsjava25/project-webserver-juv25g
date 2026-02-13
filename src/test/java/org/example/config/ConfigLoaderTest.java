@@ -124,4 +124,18 @@ class ConfigLoaderTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("failed to read config file");
     }
+
+    @Test
+    @DisplayName("Should fail when port is out of range")
+    void invalid_port_should_Throw_Exception    () throws Exception {
+        Path configFile = tempDir.resolve("application.yml");
+
+        Files.writeString(configFile, """
+        server:
+          port: 70000
+        """);
+
+        assertThatThrownBy(() -> ConfigLoader.loadOnce(configFile))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Invalid port number");
+    }
 }
