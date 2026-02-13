@@ -10,11 +10,19 @@ import java.nio.file.Files;
 import java.util.Map;
 
 public class StaticFileHandler {
-    private static final String WEB_ROOT = "www";
+    private final String WEB_ROOT;
     private byte[] fileBytes;
     private int statusCode;
 
-    public StaticFileHandler(){}
+    //Constructor for production
+    public StaticFileHandler() {
+        WEB_ROOT = "www";
+    }
+
+    //Constructor for tests, otherwise the www folder won't be seen
+    public StaticFileHandler(String webRoot){
+        WEB_ROOT = webRoot;
+    }
 
     private void handleGetRequest(String uri) throws IOException {
 
@@ -25,6 +33,7 @@ public class StaticFileHandler {
         } else {
             File errorFile = new File(WEB_ROOT, "pageNotFound.html");
             fileBytes = Files.readAllBytes(errorFile.toPath());
+            statusCode = 404;
         }
     }
 
