@@ -29,6 +29,9 @@ public record AppConfig(
 
         public ServerConfig withDefaultsApplied() {
             int p = (port == null ? 8080 : port);
+            if (p < 1 || p > 65535) {
+                throw new IllegalArgumentException("Invalid port number: " + p + ". Port must be between 1 and 65535");
+            }
             String rd = (rootDir == null || rootDir.isBlank()) ? "./www" : rootDir;
             return new ServerConfig(p, rd);
         }
