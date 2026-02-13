@@ -18,13 +18,17 @@ public class IpFilter implements Filter {
     }
 
     @Override
-    public void init() {
-
-    }
+    public void init() {}
 
     @Override
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
         String clientIp = (String) request.getAttribute("clientIp");
+
+        if (clientIp == null) {
+            response.setStatusCode(400);
+            response.setBody("Bad Request: Missing client IP address");
+            return;
+        }
 
         boolean allowed = isIpAllowed(clientIp);
 
@@ -37,9 +41,7 @@ public class IpFilter implements Filter {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
 
     private boolean isIpAllowed(String ip) {
         if (mode == FilterMode.ALLOWLIST) {

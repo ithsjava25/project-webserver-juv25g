@@ -93,7 +93,28 @@ class IpFilterTest {
 
         String result = response.build();
         assertThat(result).contains("403");
+    }
 
+    @Test
+    void testMissingClientIp_Returns400() {
+        // ARRANGE
+        HttpRequest request = new HttpRequest(
+                "GET",
+                "/",
+                "HTTP/1.1",
+                Collections.emptyMap(),
+                ""
+        );
+
+        // ACT
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        assertThat(chainCalled).isFalse();
+
+        String result = response.build();
+        assertThat(result).contains("400");
+        assertThat(result).contains("Bad Request");
     }
 
     private HttpRequest createRequestWithIp(String ip) {
