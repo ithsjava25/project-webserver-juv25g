@@ -26,11 +26,11 @@ public class IpFilter implements Filter {
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
         String clientIp = (String) request.getAttribute("clientIp");
 
-        // If IP is not blocked, continue in the chain
-        if (!blockedIps.contains(clientIp)) {
+        boolean allowed = isIpAllowed(clientIp);
+
+        if (allowed) {
             chain.doFilter(request, response);
         } else {
-            // if IP is blocked - set the status code to 403
             response.setStatusCode(403);
             response.setBody("Forbidden: IP address " + clientIp + " is not allowed");
         }
@@ -41,6 +41,14 @@ public class IpFilter implements Filter {
 
     }
 
+    private boolean isIpAllowed(String ip) {
+        if (mode == FilterMode.ALLOWLIST) {
+            return allowedIps.contains(ip);
+        } else {
+            return !blockedIps.contains(ip);
+        }
+    }
+
     public void setMode(FilterMode mode) {
         this.mode = mode;
     }
@@ -49,5 +57,7 @@ public class IpFilter implements Filter {
         blockedIps.add(ip);
     }
 
-    public void addAllowedIp(String ip) { allowedIps.add(ip); }
+    public void addAllowedIp(String ip) {
+        allowedIps.add(ip);
+    }
 }

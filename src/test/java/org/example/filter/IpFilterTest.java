@@ -76,6 +76,26 @@ class IpFilterTest {
         assertThat(chainCalled).isTrue();
     }
 
+    @Test
+    void testAllowListMode_BlockNonWhitelistedIp() {
+        // ARRANGE
+        ipFilter.setMode(IpFilter.FilterMode.ALLOWLIST);
+        ipFilter.addAllowedIp("10.0.0.1");
+        ipFilter.init();
+
+        HttpRequest request = createRequestWithIp("10.0.0.2");
+
+        // ACT
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        assertThat(chainCalled).isFalse();
+
+        String result = response.build();
+        assertThat(result).contains("403");
+
+    }
+
     private HttpRequest createRequestWithIp(String ip) {
         HttpRequest request = new HttpRequest(
                 "GET",
