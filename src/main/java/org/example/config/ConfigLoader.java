@@ -16,12 +16,15 @@ public final class ConfigLoader {
 
     private ConfigLoader() {}
 
-    public static AppConfig loadOnce(Path configPath) {
+    public static AppConfig loadOnce(Path configPath, String [] args) {
         if (cached != null) return cached;
 
         synchronized (ConfigLoader.class) {
-            if (cached == null){
-                cached = load(configPath).withDefaultsApplied();
+            if (cached == null) {
+                AppConfig base = load(configPath).withDefaultsApplied();
+
+                CliOverride override = CliParser.parse(args);
+                cached = base.withOverrides(override).withDefaultsApplied();
             }
             return cached;
         }
