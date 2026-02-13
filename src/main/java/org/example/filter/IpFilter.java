@@ -28,6 +28,10 @@ public class IpFilter implements Filter {
         // If IP is not blocked, continue in the chain
         if (!blockedIps.contains(clientIp)) {
             chain.doFilter(request, response);
+        } else {
+            // if IP is blocked - set the status code to 403
+            response.setStatusCode(403);
+            response.setBody("Forbidden: IP address " + clientIp + " is not allowed");
         }
     }
 

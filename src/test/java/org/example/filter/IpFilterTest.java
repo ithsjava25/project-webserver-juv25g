@@ -5,11 +5,9 @@ import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.http.HttpResponse;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class IpFilterTest {
 
@@ -40,6 +38,26 @@ class IpFilterTest {
 
         // ASSERT
         assertThat(chainCalled).isTrue();
+    }
+
+    @Test
+    void testBlocklistMode_BlocksBlockedIp() {
+        // ARRANGE
+        ipFilter.setMode(IpFilter.FilterMode.BLOCKLIST);
+        ipFilter.addBlockedIp("192.168.1.100");
+        ipFilter.init();
+
+        HttpRequest request = createRequestWithIp("192.168.1.100");
+
+        // ACT
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        assertThat(chainCalled).isFalse();
+
+        String result = response.build();
+        assertThat(result).contains("403");
+        assertThat(result).contains("Forbidden");
     }
 
     private HttpRequest createRequestWithIp(String ip) {
