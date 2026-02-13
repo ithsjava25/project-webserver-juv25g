@@ -41,4 +41,27 @@ class StaticFileHandlerTest {
 
     }
 
+    @Test
+    void test_file_that_does_not_exists_should_return_404() throws IOException {
+        //Arrange
+        // Pre-create the mandatory error page in the temp directory to prevent NoSuchFileException
+        Path testFile = tempDir.resolve("pageNotFound.html");
+        Files.writeString(testFile, "Fallback page");
+
+        //Using the new constructor in StaticFileHandler to reroute so the tests uses the temporary folder instead of the hardcoded www
+        StaticFileHandler staticFileHandler = new StaticFileHandler(tempDir.toString());
+
+        //Using ByteArrayOutputStream instead of Outputstream during tests to capture the servers response in memory, fake stream
+        ByteArrayOutputStream fakeOutput = new ByteArrayOutputStream();
+
+        //Act
+        staticFileHandler.sendGetRequest(fakeOutput, "notExistingFile.html"); // Request a file that clearly doesn't exist to trigger the 404 logic
+
+        //Assert
+        String response = fakeOutput.toString();//Converts the captured byte stream into a String for verification
+
+        assertTrue(response.contains("HTTP/1.1 404 Not Found")); // Assert the status
+
+    }
+
 }
