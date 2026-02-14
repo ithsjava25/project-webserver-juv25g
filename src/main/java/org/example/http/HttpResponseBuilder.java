@@ -1,7 +1,6 @@
 package org.example.http;
 
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,7 +22,8 @@ public class HttpResponseBuilder {
     }
 
     public void setHeaders(Map<String, String> headers) {
-        this.headers = new LinkedHashMap<>(headers);
+        this.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        this.headers.putAll(headers);
     }
 
     public void setHeader(String name, String value) {
@@ -35,31 +35,46 @@ public class HttpResponseBuilder {
         setHeader("Content-Type", mimeType);
     }
 
-    private static final Map<Integer, String> REASON_PHRASES = Map.of(
-            200, "OK",
-            201, "Created",
-            400, "Bad Request",
-            404, "Not Found",
-            500, "Internal Server Error");
+    private static final Map<Integer, String> REASON_PHRASES = Map.ofEntries(
+            Map.entry(200, "OK"),
+            Map.entry(201, "Created"),
+            Map.entry(204, "No Content"),
+            Map.entry(301, "Moved Permanently"),
+            Map.entry(302, "Found"),
+            Map.entry(303, "See Other"),
+            Map.entry(304, "Not Modified"),
+            Map.entry(307, "Temporary Redirect"),
+            Map.entry(308, "Permanent Redirect"),
+            Map.entry(400, "Bad Request"),
+            Map.entry(401, "Unauthorized"),
+            Map.entry(403, "Forbidden"),
+            Map.entry(404, "Not Found"),
+            Map.entry(500, "Internal Server Error"),
+            Map.entry(502, "Bad Gateway"),
+            Map.entry(503, "Service Unavailable")
+    );
 
     public String build(){
         StringBuilder sb = new StringBuilder();
-        String reason = REASON_PHRASES.getOrDefault(statusCode, "OK");
+        String reason = REASON_PHRASES.getOrDefault(statusCode, "");
 
-        // Status line
-        sb.append(PROTOCOL).append(" ").append(statusCode).append(" ").append(reason).append(CRLF);
+        sb.append(PROTOCOL).append(" ").append(statusCode);
+        if (!reason.isEmpty()) {
+            sb.append(" ").append(reason);
+        }
+        sb.append(CRLF);
 
         // User-defined headers
         headers.forEach((k,v) -> sb.append(k).append(": ").append(v).append(CRLF));
 
-        // Only adds Content-Length if not already set
+        // Auto-append Content-Length if not set
         if (!headers.containsKey("Content-Length")) {
             sb.append("Content-Length: ")
                     .append(body.getBytes(StandardCharsets.UTF_8).length)
                     .append(CRLF);
         }
 
-        // Only adds Connection if not already set
+        // Auto-append Connection if not set
         if (!headers.containsKey("Connection")) {
             sb.append("Connection: close").append(CRLF);
         }
