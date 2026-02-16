@@ -21,8 +21,8 @@ public record AppConfig(
     public AppConfig withOverrides(CliOverride override) {
         if (override == null) return this;
 
-        ServerConfig baseServer = this.server();
-        LoggingConfig baseLogging = this.logging();
+        ServerConfig baseServer = this.server() != null ? this.server() : ServerConfig.defaults();
+        LoggingConfig baseLogging = this.logging() != null ? this.logging() : LoggingConfig.defaults();
 
         ServerConfig  updatedServer = new ServerConfig(
                 override.port() != null ? override.port() : baseServer.port(),

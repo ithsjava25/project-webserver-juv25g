@@ -1,7 +1,7 @@
 package org.example.config;
 
 public final class CliParser {
-    public static CliOverride parse (String[] args)  {
+    public static CliOverride parse(String[] args) {
         Integer port = null;
         String rootDir = null;
         String logLevel = null;
@@ -16,6 +16,7 @@ public final class CliParser {
 
             if (key.equals("help")) {
                 IO.println(printHelp());
+                return CliOverride.empty();
             }
 
             if (i + 1 >= args.length || args[i + 1].startsWith("--")) {
@@ -34,16 +35,17 @@ public final class CliParser {
         return new CliOverride(port, rootDir, logLevel);
     }
 
-    public static int parsePort  (String input) {
+    public static int parsePort(String input) {
+        int p;
         try {
-            int p = Integer.parseInt(input);
-            if (p < 1 || p > 65535) {
-                throw new NumberFormatException("port must be between 1 and 65535");
-            }
-            return p;
+            p = Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            throw new NumberFormatException("port out of range: must be a number between 1 and 65535");
+            throw new NumberFormatException("invalid port: '" + input + "' is not a valid number");
         }
+        if (p < 1 || p > 65535) {
+            throw new NumberFormatException("port out of range: " + p + ". Must be between 1 and 65535");
+        }
+        return p;
     }
 
     public static String printHelp() {
@@ -53,7 +55,7 @@ public final class CliParser {
                   --rootDir <path>
                   --logLevel <level>
                   --help
-
+                
                 examples:
                   --port 8080 --rootDir ./www --logLevel INFO
                 """;

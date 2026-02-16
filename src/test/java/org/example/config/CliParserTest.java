@@ -34,7 +34,7 @@ public class CliParserTest {
     }
 
     @Test
-    @DisplayName("parsePort out of range should throw IllegalArgumentException")
+    @DisplayName("parsePort out of range should throw NumberFormatException")
     void parsePort_out_of_range_should_throw_exception()
     {
         assertThatThrownBy(() -> CliParser.parsePort("70000"))
