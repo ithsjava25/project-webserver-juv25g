@@ -1,6 +1,6 @@
 package org.example.filter;
 
-import org.example.http.HttpResponseBuilder;
+import org.example.http.HttpResponse;
 import org.example.httpparser.HttpRequest;
 
 import java.util.HashSet;
@@ -21,7 +21,7 @@ public class IpFilter implements Filter {
     public void init() {}
 
     @Override
-    public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
+    public void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) {
         String clientIp = (String) request.getAttribute("clientIp");
 
         if (clientIp == null) {
