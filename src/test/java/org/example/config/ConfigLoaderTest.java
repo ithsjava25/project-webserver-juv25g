@@ -44,7 +44,7 @@ class ConfigLoaderTest {
                   level: DEBUG
                 """);
 
-        AppConfig appConfig = ConfigLoader.loadOnce(configFile);
+        AppConfig appConfig = ConfigLoader.loadOnce(configFile, new String[0]);
 
         assertThat(appConfig.server().port()).isEqualTo(9090);
         assertThat(appConfig.server().rootDir()).isEqualTo("./public");
@@ -60,7 +60,7 @@ class ConfigLoaderTest {
                   port: 1234
                 """);
 
-        AppConfig cfg = ConfigLoader.loadOnce(configFile);
+        AppConfig cfg = ConfigLoader.loadOnce(configFile, new String[0]);
 
         assertThat(cfg.server().port()).isEqualTo(1234);
         assertThat(cfg.server().rootDir()).isEqualTo("./www"); // default
@@ -81,7 +81,7 @@ class ConfigLoaderTest {
                   json: true
                 """);
 
-        AppConfig cfg = ConfigLoader.loadOnce(configFile);
+        AppConfig cfg = ConfigLoader.loadOnce(configFile, new String[0]);
 
         assertThat(cfg.server().port()).isEqualTo(8081);
         assertThat(cfg.server().rootDir()).isEqualTo("./www");
@@ -100,8 +100,8 @@ class ConfigLoaderTest {
                   level: INFO
                 """);
 
-        AppConfig a = ConfigLoader.loadOnce(configFile);
-        AppConfig b = ConfigLoader.loadOnce(configFile);
+        AppConfig a = ConfigLoader.loadOnce(configFile, new String[0]);
+        AppConfig b = ConfigLoader.loadOnce(configFile, new String[0]);
 
         assertThat(a).isSameAs(b);
     }
@@ -135,7 +135,7 @@ class ConfigLoaderTest {
           port: 70000
         """);
 
-        assertThatThrownBy(() -> ConfigLoader.loadOnce(configFile))
+        assertThatThrownBy(() -> ConfigLoader.loadOnce(configFile, new String[0]))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Invalid port number");
     }
 }

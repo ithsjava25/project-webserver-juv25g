@@ -16,7 +16,7 @@ public final class ConfigLoader {
 
     private ConfigLoader() {}
 
-    public static AppConfig loadOnce(Path configPath, String [] args) {
+    public static AppConfig loadOnce(Path configPath, String[] args) {
         if (cached != null) return cached;
 
         synchronized (ConfigLoader.class) {
