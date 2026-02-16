@@ -19,7 +19,9 @@ public class IpFilter implements Filter {
     }
 
     @Override
-    public void init() {}
+    public void init() {
+        // Intentionally empty - no initialization needed
+    }
 
     @Override
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
@@ -42,7 +44,9 @@ public class IpFilter implements Filter {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+        // Intentionally empty - no cleanup needed
+    }
 
     private boolean isIpAllowed(String ip) {
         if (mode == FilterMode.ALLOWLIST) {
