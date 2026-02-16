@@ -162,4 +162,22 @@ class IpFilterTest {
         assertThat(chainCalled).isTrue();
     }
 
+    @Test
+    void testEmptyStringIp() {
+        // ARRANGE
+        ipFilter.setMode(IpFilter.FilterMode.BLOCKLIST);
+        HttpRequest request = createRequestWithIp("");
+
+        // ACT
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        String result = response.build();
+        assertAll(
+                () -> assertThat(chainCalled).isFalse(),
+                () -> assertThat(result).contains("400"),
+                () -> assertThat(result).contains("Bad Request")
+        );
+    }
+
 }

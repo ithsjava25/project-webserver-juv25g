@@ -25,7 +25,7 @@ public class IpFilter implements Filter {
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
         String clientIp = (String) request.getAttribute("clientIp");
 
-        if (clientIp == null) {
+        if (clientIp == null || clientIp.trim().isEmpty()) {
             response.setStatusCode(400);
             response.setBody("Bad Request: Missing client IP address");
             return;
