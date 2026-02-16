@@ -42,7 +42,7 @@ public final class CliParser {
             }
             return p;
         } catch (NumberFormatException e) {
-            throw new NumberFormatException("port must be a number between 1 and 65535");
+            throw new NumberFormatException("port out of range: must be a number between 1 and 65535");
         }
     }
 
