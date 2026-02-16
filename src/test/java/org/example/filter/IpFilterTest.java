@@ -138,7 +138,7 @@ class IpFilterTest {
     void testEmptyAllowlist_BlocksAllIps() {
         // ARRANGE
         ipFilter.setMode(IpFilter.FilterMode.ALLOWLIST);
-        // Do not add Ip to list
+        // Do not add Ip to the list
 
         // ACT
         HttpRequest request = createRequestWithIp("1.2.3.4");
@@ -152,7 +152,7 @@ class IpFilterTest {
     void testEmptyBlocklist_AllowAllIps() {
         // ARRANGE
         ipFilter.setMode(IpFilter.FilterMode.BLOCKLIST);
-        // Do not add Ip to list
+        // Do not add Ip to the list
 
         // ACT
         HttpRequest request = createRequestWithIp("1.2.3.4");
