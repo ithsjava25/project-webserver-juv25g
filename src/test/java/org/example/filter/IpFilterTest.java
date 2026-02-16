@@ -132,4 +132,34 @@ class IpFilterTest {
         return request;
     }
 
+    // EDGE CASES
+
+    @Test
+    void testEmptyAllowlist_BlocksAllIps() {
+        // ARRANGE
+        ipFilter.setMode(IpFilter.FilterMode.ALLOWLIST);
+        // Do not add Ip to list
+
+        // ACT
+        HttpRequest request = createRequestWithIp("1.2.3.4");
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        assertThat(chainCalled).isFalse();
+    }
+
+    @Test
+    void testEmptyBlocklist_AllowAllIps() {
+        // ARRANGE
+        ipFilter.setMode(IpFilter.FilterMode.BLOCKLIST);
+        // Do not add Ip to list
+
+        // ACT
+        HttpRequest request = createRequestWithIp("1.2.3.4");
+        ipFilter.doFilter(request, response, mockChain);
+
+        // ASSERT
+        assertThat(chainCalled).isTrue();
+    }
+
 }
