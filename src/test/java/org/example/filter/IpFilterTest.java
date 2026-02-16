@@ -1,6 +1,6 @@
 package org.example.filter;
 
-import org.example.http.HttpResponse;
+import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,14 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 class IpFilterTest {
 
     private IpFilter ipFilter;
-    private HttpResponse response;
+    private HttpResponseBuilder response;
     private FilterChain mockChain;
     private boolean chainCalled;
 
     @BeforeEach
     void setUp() {
         ipFilter = new IpFilter();
-        response = new HttpResponse();
+        response = new HttpResponseBuilder();
         chainCalled = false;
         mockChain = (req, resp) -> chainCalled = true;
     }
