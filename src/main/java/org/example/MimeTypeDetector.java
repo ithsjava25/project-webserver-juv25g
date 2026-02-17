@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MimeTypeDetector {
+    private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     private final Map<String, String> mimeTypes;
 
     public MimeTypeDetector() {
         mimeTypes = new HashMap<>();
         initializeMimeTypes();
     }
-
 
     private void initializeMimeTypes(){
         mimeTypes.put("html", "text/html");
@@ -28,13 +28,17 @@ public class MimeTypeDetector {
     }
 
     public String detect(String filename){
+        // Hantera null-värde för att undvika NullPointerException
+        if (filename == null || filename.isEmpty()) {
+            return DEFAULT_MIME_TYPE;
+        }
+        
         int lastDot = filename.lastIndexOf('.');
         if (lastDot == -1){
-            // detta är en Standard för typer som är okända
-            return "application/octet-stream";
+            return DEFAULT_MIME_TYPE;
         }
         String extension = filename.substring(lastDot+1).toLowerCase();
-        return mimeTypes.getOrDefault(extension, "application/octet-stream");
+        return mimeTypes.getOrDefault(extension, DEFAULT_MIME_TYPE);
     }
 
     public static void main(String[] args) {
