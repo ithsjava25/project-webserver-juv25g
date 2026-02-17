@@ -35,6 +35,10 @@ public class HttpCachingHeaders {
         setHeader(LAST_MODIFIED, HTTP_DATE_FORMATTER.format(instant));
     }
 
+    public void setNoCache() {
+        setCacheControl("no-store, no-cache, must-revalidate");
+    }
+
 
 
     public void applyTo(Map<String,String> target){
