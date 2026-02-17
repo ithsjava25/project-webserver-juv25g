@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MimeTypeDetector {
-    private Map<String, String> mimeTypes;
+    private final Map<String, String> mimeTypes;
 
     public MimeTypeDetector() {
         mimeTypes = new HashMap<>();
