@@ -44,8 +44,8 @@ public class HttpCachingHeaders {
     /**
      * Helper method for setting ETag header value
      * ETag values must be enclosed in double quotes "123" not 123
-     * @param etag ETag value as quouted per RFC 7232
-     *
+     * @param etag Raw, unquoted ETag token (e.g. {`@code` abc123}); double quotes
+     * are added automatically to comply with RFC 7232.
      */
     public void addETagHeader(String etag) {
         if (etag == null) return;
@@ -80,10 +80,10 @@ public class HttpCachingHeaders {
 
 
     /**
-     * In case of errors or unexpected behaviour, cache should be disabled and no data should be saved
+     * In case of errors or unexpected behaviour, the cache should be disabled and no data should be saved
      */
     public void setNoCache() {
-        setCacheControl("no-store, no-cache, must-revalidate");
+        setCacheControl("no-store, no-cache");
     }
 
 
