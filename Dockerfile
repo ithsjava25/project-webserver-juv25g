@@ -11,5 +11,5 @@ COPY --from=build /build/target/classes/ /app/
 COPY --from=build /build/target/dependency/ /app/dependencies/
 COPY /www/ /app/www/
 WORKDIR /app/
-ENTRYPOINT ["java", "-classpath", "/app:/dependencies", "org.example.App"]
+ENTRYPOINT ["java", "-classpath", "/app:/dependencies/*", "org.example.App"]
 USER appuser
