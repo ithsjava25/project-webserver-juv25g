@@ -83,14 +83,12 @@ class StaticFileHandlerTest {
         // Arrange
         Path secret = tempDir.resolve("secret.txt");
         Files.writeString(secret,"TOP SECRET");
-
-        // Act
         Path webRoot = tempDir.resolve("www");
         Files.createDirectories(webRoot);
-
         StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
         ByteArrayOutputStream fakeOutput = new ByteArrayOutputStream();
 
+        // Act
         handler.sendGetRequest(fakeOutput, "../secret.txt");
 
         // Assert

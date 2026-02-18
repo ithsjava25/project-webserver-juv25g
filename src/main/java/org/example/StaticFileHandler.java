@@ -35,13 +35,13 @@ public class StaticFileHandler {
         File root = new File(WEB_ROOT).getCanonicalFile();
         File file = new File(root, uri).getCanonicalFile();
         if (!file.toPath().startsWith(root.toPath())) {
-            fileBytes = "403 Forbidden".getBytes();
+            fileBytes = "403 Forbidden".getBytes(java.nio.charset.StandardCharsets.UTF_8);
             statusCode = 403;
             return;
         }
 
         // Read file
-        if (file.exists()) {
+        if (file.isFile()) {
             fileBytes = Files.readAllBytes(file.toPath());
             statusCode = 200;
         } else {
@@ -49,7 +49,7 @@ public class StaticFileHandler {
             if (errorFile.exists()) {
                 fileBytes = Files.readAllBytes(errorFile.toPath());
             } else {
-                fileBytes = "404 Not Found".getBytes();
+                fileBytes = "404 Not Found".getBytes(java.nio.charset.StandardCharsets.UTF_8);
             }
             statusCode = 404;
         }
