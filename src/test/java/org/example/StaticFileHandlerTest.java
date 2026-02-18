@@ -130,6 +130,8 @@ class StaticFileHandlerTest {
         handler.sendGetRequest(out, "index.html\0../../etc/passwd");
 
         // Assert
-        assertFalse(out.toString().contains("HTTP/1.1 200 OK"));
+        String response = out.toString();
+        assertFalse(response.contains("HTTP/1.1 200 OK"));
+        assertTrue(response.contains("HTTP/1.1 404 Not Found"));
     }
 }

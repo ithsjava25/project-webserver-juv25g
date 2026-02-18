@@ -26,8 +26,10 @@ public class StaticFileHandler {
 
     private void handleGetRequest(String uri) throws IOException {
         // Sanitize URI
-        int q = uri.indexOf('?'); if (q >= 0) uri = uri.substring(0, q);
-        int h = uri.indexOf('#'); if (h >= 0) uri = uri.substring(0, h);
+        int q = uri.indexOf('?');
+        if (q >= 0) uri = uri.substring(0, q);
+        int h = uri.indexOf('#');
+        if (h >= 0) uri = uri.substring(0, h);
         uri = uri.replace("\0", "");
         if (uri.startsWith("/")) uri = uri.substring(1);
 
@@ -46,7 +48,7 @@ public class StaticFileHandler {
             statusCode = 200;
         } else {
             File errorFile = new File(WEB_ROOT, "pageNotFound.html");
-            if (errorFile.exists()) {
+            if (errorFile.isFile()) {
                 fileBytes = Files.readAllBytes(errorFile.toPath());
             } else {
                 fileBytes = "404 Not Found".getBytes(java.nio.charset.StandardCharsets.UTF_8);
