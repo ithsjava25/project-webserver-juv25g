@@ -9,7 +9,12 @@ public class App {
     public static void main(String[] args) {
         Path configPath = Path.of("src/main/resources/application.yml");
 
-        AppConfig appConfig = ConfigLoader.loadOnce(configPath);
+        //Försöker läsa extern fil annars fallback till classpath
+        AppConfig appConfig = ConfigLoader.loadOnceWithClasspathFallback(
+                Path.of("application.yml"),
+                "application.yml"
+        );
+
         int port = appConfig.server().port();
         new TcpServer(port).start();
     }
