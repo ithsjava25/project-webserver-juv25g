@@ -10,6 +10,10 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+/**
+ * Integration tests for IpFilter.
+ * Verifies behavior in both ALLOWLIST and BLOCKLIST modes.
+ */
 class IpFilterTest {
 
     private IpFilter ipFilter;
