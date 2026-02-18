@@ -80,11 +80,11 @@ class StaticFileHandlerTest {
 
     @Test
     void test_path_traversal_should_return_403() throws IOException {
-        //Arrange
+        // Arrange
         Path secret = tempDir.resolve("secret.txt");
         Files.writeString(secret,"TOP SECRET");
 
-        //Act
+        // Act
         Path webRoot = tempDir.resolve("www");
         Files.createDirectories(webRoot);
 
@@ -93,7 +93,7 @@ class StaticFileHandlerTest {
 
         handler.sendGetRequest(fakeOutput, "../secret.txt");
 
-        //Assert
+        // Assert
         String response = fakeOutput.toString();
         assertFalse(response.contains("TOP SECRET"));
         assertTrue(response.contains("HTTP/1.1 403 Forbidden"));
@@ -120,4 +120,18 @@ class StaticFileHandlerTest {
         assertTrue(out.toString().contains("HTTP/1.1 200 OK"));
     }
 
+    @Test
+    void null_byte_injection_should_not_return_200() throws IOException {
+        // Arrange
+        Path webRoot = tempDir.resolve("www");
+        Files.createDirectories(webRoot);
+        StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        // Act
+        handler.sendGetRequest(out, "index.html\0../../etc/passwd");
+
+        // Assert
+        assertFalse(out.toString().contains("HTTP/1.1 200 OK"));
+    }
 }
