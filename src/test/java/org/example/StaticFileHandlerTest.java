@@ -2,6 +2,8 @@ package org.example;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -75,5 +77,29 @@ class StaticFileHandlerTest {
         assertTrue(response.contains("HTTP/1.1 404 Not Found")); // Assert the status
 
     }
+
+    @Test
+    void test_path_traversal_should_return_403() throws IOException {
+        //Arrange
+        Path secret = tempDir.resolve("secret.txt");
+        Files.writeString(secret,"TOP SECRET");
+
+        //Act
+        Path webRoot = tempDir.resolve("www");
+        Files.createDirectories(webRoot);
+
+        StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
+        ByteArrayOutputStream fakeOutput = new ByteArrayOutputStream();
+
+        handler.sendGetRequest(fakeOutput, "../secret.txt");
+
+        //Assert
+        String response = fakeOutput.toString();
+        assertFalse(response.contains("TOP SECRET"));
+        assertTrue(response.contains("HTTP/1.1 403 Forbidden"));
+
+    }
+
+
 
 }
