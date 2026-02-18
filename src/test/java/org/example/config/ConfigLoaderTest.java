@@ -138,4 +138,16 @@ class ConfigLoaderTest {
         assertThatThrownBy(() -> ConfigLoader.loadOnce(configFile))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Invalid port number");
     }
+
+    @Test
+    @DisplayName("missing external file should fallback to classpath")
+    void fallback_to_classpath_when_external_file_missing(){
+        AppConfig appConfig = ConfigLoader.loadOnceWithClasspathFallback(tempDir.resolve("missing.yml"),"application.yml");
+
+        assertThat(appConfig.server().port()).isEqualTo(3030);
+
+
+
+
+    }
 }
