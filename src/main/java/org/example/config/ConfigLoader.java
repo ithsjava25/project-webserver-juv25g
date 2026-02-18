@@ -27,6 +27,24 @@ public final class ConfigLoader {
         }
     }
 
+    public static AppConfig loadOnceWithClasspathFallback(Path externalPath, String classpathResourceName) {
+        if (cached != null) return cached;
+
+        synchronized (ConfigLoader.class) {
+            if (cached == null){
+                AppConfig base;
+                if (Files.exists(externalPath)) {
+                    base = load(externalPath);
+                } else {
+                    base = loadFromClasspath(classpathResourceName);
+                }
+
+                cached = base.withDefaultsApplied();
+            }
+            return cached;
+        }
+    }
+
     public static AppConfig get(){
         if (cached == null){
             throw new IllegalStateException("Config not loaded. call ConfigLoader.loadOnce(...) at startup.");
@@ -52,8 +70,25 @@ public final class ConfigLoader {
         }
     }
 
-    private static ObjectMapper createMapperFor(Path configPath) {
-        String name = configPath.getFileName().toString().toLowerCase();
+    public static AppConfig loadFromClasspath(String classpathResourceName) {
+        Objects.requireNonNull(classpathResourceName, "classpathResourceName");
+
+        try (InputStream stream = ConfigLoader.class.getClassLoader().getResourceAsStream(classpathResourceName)) {
+            if (stream == null) {
+                return AppConfig.defaults();
+            }
+
+            ObjectMapper  objectMapper = createMapperForName(classpathResourceName);
+
+            AppConfig config = objectMapper.readValue(stream, AppConfig.class);
+            return config == null ? AppConfig.defaults() : config;
+        } catch (Exception e){
+            throw new IllegalStateException("failed to read config file from classpath: " + classpathResourceName, e);
+        }
+    }
+
+    private static ObjectMapper createMapperForName(String fileName) {
+        String name = fileName.toLowerCase();
 
         if (name.endsWith(".yml") || name.endsWith(".yaml")) {
             return YAMLMapper.builder(new YAMLFactory()).build();
@@ -63,6 +98,13 @@ public final class ConfigLoader {
         } else  {
             return YAMLMapper.builder(new YAMLFactory()).build();
         }
+
+    }
+
+    private static ObjectMapper createMapperFor(Path configPath) {
+        String name = configPath.getFileName().toString();
+
+        return createMapperForName(name);
     }
 
     static void resetForTests() {
