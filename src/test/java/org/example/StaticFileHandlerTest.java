@@ -49,7 +49,7 @@ class StaticFileHandlerTest {
         assertTrue(response.contains("HTTP/1.1 200 OK")); // Assert the status
         assertTrue(response.contains("Hello Test")); //Assert the content in the file
 
-        assertTrue(response.contains("Content-Type: text/html; charset=utf-8")); // Verify the correct Content-type header
+        assertTrue(response.contains("Content-Type: text/html; charset=UTF-8")); // Verify the correct Content-type header
 
     }
 
