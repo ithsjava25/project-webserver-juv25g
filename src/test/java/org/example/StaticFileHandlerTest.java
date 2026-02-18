@@ -97,9 +97,27 @@ class StaticFileHandlerTest {
         String response = fakeOutput.toString();
         assertFalse(response.contains("TOP SECRET"));
         assertTrue(response.contains("HTTP/1.1 403 Forbidden"));
-
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "index.html?foo=bar",
+            "index.html#section",
+            "/index.html"
+    })
+    void sanitized_uris_should_return_200(String uri) throws IOException {
+        // Arrange
+        Path webRoot = tempDir.resolve("www");
+        Files.createDirectories(webRoot);
+        Files.writeString(webRoot.resolve("index.html"), "Hello");
+        StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+        // Act
+        handler.sendGetRequest(out, uri);
+
+        // Assert
+        assertTrue(out.toString().contains("HTTP/1.1 200 OK"));
+    }
 
 }
