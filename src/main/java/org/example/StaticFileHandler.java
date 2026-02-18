@@ -48,8 +48,9 @@ public class StaticFileHandler {
         response.setStatusCode(statusCode);
         response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
         response.setBody(fileBytes);
-        PrintWriter writer = new PrintWriter(outputStream, true);
-        writer.println(response.build());
+        PrintWriter writer = new PrintWriter(outputStream);
+        writer.print(response.build());
+        writer.flush();
 
     }
 
