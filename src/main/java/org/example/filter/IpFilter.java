@@ -4,8 +4,8 @@ package org.example.filter;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A filter that allows or blocks HTTP requests based on the client's IP address.
@@ -15,8 +15,8 @@ import java.util.Set;
  */
 public class IpFilter implements Filter {
 
-    private final Set<String> blockedIps = new HashSet<>();
-    private final Set<String> allowedIps = new HashSet<>();
+    private final Set<String> blockedIps = ConcurrentHashMap.newKeySet();
+    private final Set<String> allowedIps = ConcurrentHashMap.newKeySet();
     private FilterMode mode = FilterMode.BLOCKLIST;
 
     /**
@@ -41,7 +41,7 @@ public class IpFilter implements Filter {
      */
     @Override
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
-        String clientIp = (String) request.getAttribute("clientIp");
+        String clientIp = normalizeIp((String) request.getAttribute("clientIp"));
 
         if (clientIp == null || clientIp.trim().isEmpty()) {
             response.setStatusCode(400);
@@ -78,15 +78,25 @@ public class IpFilter implements Filter {
         }
     }
 
+    /**
+     * Trims leading and trailing whitespace from an IP address.
+     *
+     * @param ip the IP address
+     * @return the trimmed IP address, or {@code null} if the input is {@code null}
+     */
+    private String normalizeIp(String ip) {
+        return ip == null ? null : ip.trim();
+    }
+
     public void setMode(FilterMode mode) {
         this.mode = mode;
     }
 
     public void addBlockedIp(String ip) {
-        blockedIps.add(ip);
+        blockedIps.add(normalizeIp(ip));
     }
 
     public void addAllowedIp(String ip) {
-        allowedIps.add(ip);
+        allowedIps.add(normalizeIp(ip));
     }
 }
