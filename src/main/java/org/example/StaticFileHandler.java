@@ -25,14 +25,28 @@ public class StaticFileHandler {
     }
 
     private void handleGetRequest(String uri) throws IOException {
+        // Sanitize URI
+        int q = uri.indexOf('?'); if (q >= 0) uri = uri.substring(0, q);
+        int h = uri.indexOf('#'); if (h >= 0) uri = uri.substring(0, h);
+        uri = uri.replace("\0", "");
+        if (uri.startsWith("/")) uri = uri.substring(1);
 
-        File file = new File(WEB_ROOT, uri);
-        if(file.exists()) {
+        // Path traversal check
+        File root = new File(WEB_ROOT).getCanonicalFile();
+        File file = new File(root, uri).getCanonicalFile();
+        if (!file.toPath().startsWith(root.toPath())) {
+            fileBytes = "403 Forbidden".getBytes();
+            statusCode = 403;
+            return;
+        }
+
+        // Read file
+        if (file.exists()) {
             fileBytes = Files.readAllBytes(file.toPath());
             statusCode = 200;
         } else {
             File errorFile = new File(WEB_ROOT, "pageNotFound.html");
-            if(errorFile.exists()) {
+            if (errorFile.exists()) {
                 fileBytes = Files.readAllBytes(errorFile.toPath());
             } else {
                 fileBytes = "404 Not Found".getBytes();
