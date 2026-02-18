@@ -9,6 +9,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ *
+ */
 public class HttpCachingHeadersTest {
 
 
@@ -26,7 +29,9 @@ public class HttpCachingHeadersTest {
     }
 
 
-
+    /**
+     * Verifies that Cache-Control header is correctly set
+     */
     @Test
     void CacheControlReturnsCorrectValue() {
         HttpCachingHeaders cachingHeaders = new HttpCachingHeaders();
@@ -62,8 +67,11 @@ public class HttpCachingHeadersTest {
         assertThat(target).containsEntry("ETag", "123456789");
     }
 
-    // Verifies that getHeaders() returns a defensive copy
-    // so external modifications do not affect internal state.
+/**
+     Verifies that getHeaders() returns a defensive copy
+     so external modifications do not affect internal state.
+ */
+
     @Test
     void getHeaders_shouldReturnDefensiveCopy(){
 
@@ -73,11 +81,11 @@ public class HttpCachingHeadersTest {
 
         Map<String, String> returnedMap = cachingHeaders.getHeaders();
 
-        returnedMap.put("Etag", "hacked");
+        returnedMap.put("ETag", "hacked");
 
         Map<String, String> returnedMap2 = cachingHeaders.getHeaders();
 
-        assertThat(returnedMap.get("Etag")).isEqualTo("hacked");
+        assertThat(returnedMap.get("ETag")).isEqualTo("hacked");
 
         assertThat(cachingHeaders.getHeaders().get("ETag")).isEqualTo("123");
 
