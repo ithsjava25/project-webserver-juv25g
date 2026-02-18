@@ -48,7 +48,17 @@ public class HttpCachingHeaders {
      *
      */
     public void addETagHeader(String etag) {
-        setHeader(ETAG, "\"" + etag + "\"");
+        if (etag == null) return;
+
+        String formattedEtag;
+        if (etag.startsWith("\"") && etag.endsWith("W/\"") ) {
+            formattedEtag = etag;
+        } else {
+            formattedEtag = "\"" + etag + "\"";
+        }
+            setHeader(ETAG, etag);
+
+
     }
 
     /**
@@ -61,8 +71,8 @@ public class HttpCachingHeaders {
 
     /**
      * Helper method for setting Last-Modified header value
-     * Formates and sets Last modified based on instant
-     * @param instant Timestamp of last modification
+     * Formates and sets Last modified based on an instant
+     * @param instant Timestamp of the last modification
      */
     public void setLastModified(Instant instant){
         setHeader(LAST_MODIFIED, HTTP_DATE_FORMATTER.format(instant));
@@ -70,7 +80,7 @@ public class HttpCachingHeaders {
 
 
     /**
-     * Incase of errors or unexpected behaviour, cache should be disabled and no data should be saved
+     * In case of errors or unexpected behaviour, cache should be disabled and no data should be saved
      */
     public void setNoCache() {
         setCacheControl("no-store, no-cache, must-revalidate");
