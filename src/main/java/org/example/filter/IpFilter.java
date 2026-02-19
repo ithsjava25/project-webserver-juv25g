@@ -17,7 +17,7 @@ public class IpFilter implements Filter {
 
     private final Set<String> blockedIps = ConcurrentHashMap.newKeySet();
     private final Set<String> allowedIps = ConcurrentHashMap.newKeySet();
-    private FilterMode mode = FilterMode.BLOCKLIST;
+    private volatile FilterMode mode = FilterMode.BLOCKLIST;
 
     /**
      * Defines the filtering mode.
