@@ -94,10 +94,10 @@ public class ConnectionHandler implements AutoCloseable {
     }
 
     private void resolveTargetFile(String uri) {
-        if (uri.matches("/$")) {
+        if ("/".equals(uri)) {
             this.uri = "index.html";
         } else {
-            this.uri = uri;
+            this.uri = uri.startsWith("/") ? uri.substring(1) : uri;
         }
     }
 
