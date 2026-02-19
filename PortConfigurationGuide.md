@@ -2,9 +2,9 @@
 
 Det här projektet väljer vilken port servern ska starta på enligt följande prioritet:
 
-1. **CLI-argument** (högst prioritet)  
-2. **Config-fil** (`ConnectionConfig.properties`)  
-3. **Default** (`8080`) (lägst prioritet)
+1. **CLI-argument** (`--port`) -högst prioritet  
+2. **Config-fil** (`application.yml` : `server.port`)  
+3. **Default** (`8080`) - lägst prioritet
 
 Det betyder: om du skickar `--port 80` så ska den alltid vinna, även om config-filen säger något annat.
 
@@ -14,43 +14,42 @@ Det betyder: om du skickar `--port 80` så ska den alltid vinna, även om config
 
 Om varken CLI eller config-fil anger port används:
 
-- `DEFAULT_PORT = 8080`
-
-Detta finns i `ServerPortResolver`.
+- **8080** (default för `server.port` i `AppConfig`.)
 
 ---
 
-## 2) Config-fil (ConnectionConfig.properties)
+### 2) Config-fil: `application.yml`
 
 ### Var ska filen ligga?
-Filen måste ligga i:
+Standard:
+- `src/main/resources/application.yml`
 
-- `src/main/resources/ConnectionConfig.properties`
+Allt i `src/main/resources` hamnar på **classpath** vid körning (IDE och byggd JAR), vilket gör att Java kan läsa filen via `getResourceAsStream(...)`.
 
-Allt som ligger i `src/main/resources` hamnar på **classpath** när du kör appen (både i IDE och från byggd JAR).  
-Därför kan Java hitta filen via `getResourceAsStream(...)`.
+**Exempel:**
 
-### Innehåll
-Exempel: 
+yaml server: port:9090
 
-```properties
-port=9090
-```
-
-## 3) CLI-argument
-
-Exempel: 
-
-```bash
-java -jar app.jar --port 80 
-```
 
 ---
+
+### 3) CLI-argument
+
+**Exempel:**
+
+```bash 
+java -jar app.jar --port 80
+```
+
+--- 
 
 ## 4) Sammanfattning
 
 Prioritet:
 
 1. CLI (`--port`)
-2. `ConnectionConfig.properties`
+2. `application.yml` (`server.port`)
 3. Default (`8080`)
+
+
+

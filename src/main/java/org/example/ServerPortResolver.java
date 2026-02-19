@@ -1,58 +1,59 @@
 package org.example;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import org.example.config.AppConfig;
+import org.example.config.ConfigLoader;
 
 public final class ServerPortResolver {
 
     public static final int DEFAULT_PORT = 8080;
+    private static final String PORT_FLAG = "--port";
 
     private ServerPortResolver() {
     }
 
     public static int resolvePort(String[] args) {
-        Integer cliPort = readPortFromCli(args);
+        Integer cliPort = parsePortFromCli(args);
         if (cliPort != null) {
-            return validatePort(cliPort, "CLI argument --port");
+            return validatePort(cliPort, "CLI argument " + PORT_FLAG);
         }
 
-        Integer configPort = readPortFromClasspathProperties("ConnectionConfig.properties", "port");
+        Integer configPort = getPortFromLoadedConfigOrNull();
         if (configPort != null) {
-            return validatePort(configPort, "config file ConnectionConfig.properties");
+            return validatePort(configPort, "configuration server.port");
         }
 
         return DEFAULT_PORT;
     }
 
-    static Integer readPortFromCli(String[] args) {
+    private static Integer getPortFromLoadedConfigOrNull() {
+        AppConfig config = getLoadedConfigOrNull();
+        if (config == null || config.server() == null) {
+            return null;
+        }
+        return config.server().port();
+    }
+
+    private static AppConfig getLoadedConfigOrNull() {
+        try {
+            return ConfigLoader.get();
+        } catch (IllegalStateException e) {
+            return null;
+        }
+    }
+
+    static Integer parsePortFromCli(String[] args) {
         if (args == null) return null;
 
         for (int i = 0; i < args.length; i++) {
-            if ("--port".equals(args[i])) {
-                if (i + 1 >= args.length) {
-                    throw new IllegalArgumentException("Missing value after --port");
+            if (PORT_FLAG.equals(args[i])) {
+                int valueIndex = i + 1;
+                if (valueIndex >= args.length) {
+                    throw new IllegalArgumentException("Missing value after " + PORT_FLAG);
                 }
-                return parseIntOrThrow(args[i + 1], "Invalid port value after --port");
+                return parseIntOrThrow(args[valueIndex], "Invalid port value after " + PORT_FLAG);
             }
         }
         return null;
-    }
-
-    static Integer readPortFromClasspathProperties(String resourceName, String key) {
-        Properties props = new Properties();
-
-        try (InputStream in = ServerPortResolver.class.getClassLoader().getResourceAsStream(resourceName)) {
-            if (in == null) return null;
-
-            props.load(in);
-            String value = props.getProperty(key);
-            if (value == null || value.isBlank()) return null;
-
-            return parseIntOrThrow(value.trim(), "Invalid integer for " + key + " in " + resourceName);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read " + resourceName, e);
-        }
     }
 
     static int validatePort(int port, String source) {
@@ -69,4 +70,5 @@ public final class ServerPortResolver {
             throw new IllegalArgumentException(message + ": " + s, e);
         }
     }
+
 }

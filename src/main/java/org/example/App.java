@@ -10,7 +10,9 @@ public class App {
         Path configPath = Path.of("src/main/resources/application.yml");
 
         AppConfig appConfig = ConfigLoader.loadOnce(configPath);
-        int port = appConfig.server().port();
+
+        int port = ServerPortResolver.resolvePort(args);
+
         new TcpServer(port).start();
     }
 }
