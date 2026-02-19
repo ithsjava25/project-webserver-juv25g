@@ -33,10 +33,16 @@ public final class ConfigLoader {
         synchronized (ConfigLoader.class) {
             if (cached == null){
                 AppConfig base;
-                if (Files.exists(externalPath)) {
-                    base = load(externalPath);
-                } else {
+                try (InputStream ext = Files.newInputStream(externalPath)) {
+                    ObjectMapper objectMapper = createMapperFor(externalPath);
+                    AppConfig config = objectMapper.readValue(ext, AppConfig.class);
+                    base = config == null ? AppConfig.defaults() : config;
+
+                } catch (java.nio.file.NoSuchFileException ignored) {
                     base = loadFromClasspath(classpathResourceName);
+
+                } catch (Exception e) {
+                    throw new IllegalStateException("failed to read config file " + externalPath.toAbsolutePath(), e);
                 }
 
                 cached = base.withDefaultsApplied();
