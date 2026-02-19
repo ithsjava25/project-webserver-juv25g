@@ -6,10 +6,11 @@ RUN mvn compile
 RUN mvn dependency:copy-dependencies -DincludeScope=compile
 
 FROM eclipse-temurin:25-jre-alpine
+EXPOSE 8080
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build /build/target/classes/ /app/
 COPY --from=build /build/target/dependency/ /app/dependencies/
 COPY /www/ /app/www/
 WORKDIR /app/
-ENTRYPOINT ["java", "-classpath", "/app:/dependencies/*", "org.example.App"]
 USER appuser
+ENTRYPOINT ["java", "-classpath", "/app:/dependencies/*", "org.example.App"]
