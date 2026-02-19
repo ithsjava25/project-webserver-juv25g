@@ -81,8 +81,6 @@ private List<Filter> buildFilters() {
     private void resolveTargetFile(String uri) {
         if (uri.matches("/$")) { //matches(/)
             this.uri = "index.html";
-        } else if (uri.matches("^(?!.*\\.html$).*$")) {
-            this.uri = uri.concat(".html");
         } else {
             this.uri = uri;
         }
