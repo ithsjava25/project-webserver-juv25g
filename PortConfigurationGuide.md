@@ -31,7 +31,6 @@ Allt i `src/main/resources` hamnar på **classpath** vid körning (IDE och byggd
 yaml server:
 port:9090
 
-
 ---
 
 ### 3) CLI-argument
@@ -41,8 +40,7 @@ port:9090
 ```bash 
 java -jar app.jar --port 80
 ```
-
---- 
+---
 
 ## 4) Sammanfattning
 
