@@ -3,13 +3,13 @@
 
 <div align="center">
 
-![Java](https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk)
+![Java](https://img.shields.io/badge/Java-21+-orange?style=for-the-badge&logo=openjdk)
 ![HTTP](https://img.shields.io/badge/HTTP-1.1-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
 *A modern, high-performance HTTP web server built from scratch in Java*
 
-[Features](#features) • [Quick Start](#quick-start) • [Configuration](#configuration) • [Documentation](#documentation)
+[Features](#features) • [Quick Start](#quick-start) • [Configuration](#configuration)
 
 ---
 
@@ -45,7 +45,7 @@
 
 ### 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone git clone https://github.com/ithsjava25/project-webserver-juv25g.git
 cd project-webserver
 ```
 
