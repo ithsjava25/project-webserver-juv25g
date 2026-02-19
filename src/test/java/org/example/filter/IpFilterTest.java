@@ -5,6 +5,7 @@ import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,7 +59,7 @@ class IpFilterTest {
         ipFilter.doFilter(request, response, mockChain);
 
         // ASSERT
-        String result = response.build();
+        String result = new String(response.build(), StandardCharsets.UTF_8);
         assertAll(
                 () -> assertThat(chainCalled).isFalse(),
                 () -> assertThat(result).contains("403"),
@@ -97,7 +98,7 @@ class IpFilterTest {
         // ASSERT
         assertThat(chainCalled).isFalse();
 
-        String result = response.build();
+        String result = new String(response.build(), StandardCharsets.UTF_8);
         assertThat(result).contains("403");
     }
 
@@ -116,7 +117,7 @@ class IpFilterTest {
         ipFilter.doFilter(request, response, mockChain);
 
         // ASSERT
-        String result = response.build();
+        String result = new String(response.build(), StandardCharsets.UTF_8);
         assertAll(
                 () -> assertThat(chainCalled).isFalse(),
                 () -> assertThat(result).contains("400"),
@@ -176,7 +177,7 @@ class IpFilterTest {
         ipFilter.doFilter(request, response, mockChain);
 
         // ASSERT
-        String result = response.build();
+        String result = new String(response.build(), StandardCharsets.UTF_8);
         assertAll(
                 () -> assertThat(chainCalled).isFalse(),
                 () -> assertThat(result).contains("400"),
