@@ -1,8 +1,12 @@
 package org.example;
 
+import org.example.http.HttpResponseBuilder;
+
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
 
 public class TcpServer {
 
@@ -30,7 +34,20 @@ public class TcpServer {
         try (ConnectionHandler connectionHandler = new ConnectionHandler(client)) {
             connectionHandler.runConnectionHandler();
         } catch (Exception e) {
-            throw new RuntimeException("Error handling client connection " + e);
+            handleInternalServerError(client);
+        }
+    }
+
+    private void handleInternalServerError(Socket client){
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setStatusCode(500);
+        response.setHeaders(Map.of("Content-Type", "text/plain; charset=utf-8"));
+        response.setBody("⚠️ Internal Server Error 500 ⚠️");
+
+        try(PrintWriter writer = new PrintWriter(client.getOutputStream(), true)) {
+            writer.print(response.build());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to print error message", e);
         }
     }
 }
