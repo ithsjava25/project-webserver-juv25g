@@ -45,19 +45,16 @@ public class ConnectionHandler implements AutoCloseable {
             IpFilter ipFilter = createIpFilterFromConfig(ipFilterConfig);
             org.example.http.HttpResponseBuilder response = new org.example.http.HttpResponseBuilder();
 
-            // Create a simple filter chain with just the IP filter
             ipFilter.doFilter(request, response, (req, resp) -> {
                 // This lambda is called if IP is allowed
                 // We don't do anything here, just continue
             });
 
-            // Check if the response has an error status (blocked)
-            // If response body is set, it means the IP was blocked
-            byte[] responseBytes = response.build();
-            String responseStr = new String(responseBytes, java.nio.charset.StandardCharsets.UTF_8);
-
-            if (responseStr.contains("403 Forbidden") || responseStr.contains("400 Bad Request")) {
+            // Check if the IP was blocked by examining the status code
+            int statusCode = response.getStatusCode();
+            if (statusCode == 403 || statusCode == 400) {
                 // IP was blocked - send error response and return
+                byte[] responseBytes = response.build();
                 client.getOutputStream().write(responseBytes);
                 client.getOutputStream().flush();
                 return;

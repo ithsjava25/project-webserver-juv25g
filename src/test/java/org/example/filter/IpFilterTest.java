@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
@@ -183,6 +184,20 @@ class IpFilterTest {
                 () -> assertThat(result).contains("400"),
                 () -> assertThat(result).contains("Bad Request")
         );
+    }
+
+    @Test
+    void testAddBlockedIp_ThrowsOnNull() {
+        assertThatThrownBy(() -> ipFilter.addBlockedIp(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null");
+    }
+
+    @Test
+    void testAddAllowedIp_ThrowsOnNull() {
+        assertThatThrownBy(() -> ipFilter.addAllowedIp(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null");
     }
 
 }

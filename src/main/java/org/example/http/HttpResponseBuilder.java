@@ -36,6 +36,9 @@ public class HttpResponseBuilder {
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
+    public int getStatusCode() {
+        return this.statusCode;
+    }
     public void setBody(String body) {
         this.body = body != null ? body : "";
         this.bytebody = null; // Clear byte body when setting string body

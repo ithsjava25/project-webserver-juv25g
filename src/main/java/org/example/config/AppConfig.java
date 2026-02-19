@@ -13,7 +13,7 @@ public record AppConfig(
         return new AppConfig(
                 ServerConfig.defaults(),
                 LoggingConfig.defaults(),
-                IpFilterConfig.defaults()  // ← LÄGG TILL
+                IpFilterConfig.defaults()
         );
     }
 

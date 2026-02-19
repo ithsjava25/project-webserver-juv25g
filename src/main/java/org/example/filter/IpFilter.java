@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * A filter that allows or blocks HTTP requests based on the client's IP address.
  * The filter supports two modes:
  * ALLOWLIST – only IP addresses in the allowlist are permitted
- * LOCKLIST – all IP addresses are permitted except those in the blocklist
+ * BLOCKLIST – all IP addresses are permitted except those in the blocklist
  */
 public class IpFilter implements Filter {
 
@@ -93,10 +93,16 @@ public class IpFilter implements Filter {
     }
 
     public void addBlockedIp(String ip) {
+        if (ip == null) {
+            throw new IllegalArgumentException("IP address cannot be null");
+        }
         blockedIps.add(normalizeIp(ip));
     }
 
     public void addAllowedIp(String ip) {
+        if (ip == null) {
+            throw new IllegalArgumentException("IP address cannot be null");
+        }
         allowedIps.add(normalizeIp(ip));
     }
 }
