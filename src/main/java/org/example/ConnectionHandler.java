@@ -40,13 +40,12 @@ public class ConnectionHandler implements AutoCloseable {
         AppConfig config = org.example.config.ConfigLoader.get();
         AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
 
-        if (ipFilterConfig.enabled()) {
+        if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
             // Create and run IP filter
             IpFilter ipFilter = createIpFilterFromConfig(ipFilterConfig);
             org.example.http.HttpResponseBuilder response = new org.example.http.HttpResponseBuilder();
 
             // Create a simple filter chain with just the IP filter
-            boolean blocked = false;
             ipFilter.doFilter(request, response, (req, resp) -> {
                 // This lambda is called if IP is allowed
                 // We don't do anything here, just continue
