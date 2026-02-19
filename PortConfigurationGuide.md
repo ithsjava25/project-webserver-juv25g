@@ -28,7 +28,8 @@ Allt i `src/main/resources` hamnar på **classpath** vid körning (IDE och byggd
 
 **Exempel:**
 
-yaml server: port:9090
+yaml server:
+port:9090
 
 
 ---
