@@ -36,14 +36,15 @@ public class HttpResponseBuilder {
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
+
     public void setBody(String body) {
         this.body = body != null ? body : "";
-        this.bytebody = null; // Clear byte body when setting string body
+        this.bytebody = null;
     }
 
     public void setBody(byte[] body) {
         this.bytebody = body;
-        this.body = ""; // Clear string body when setting byte body
+        this.body = "";
     }
 
     public void setHeaders(Map<String, String> headers) {
@@ -65,7 +66,6 @@ public class HttpResponseBuilder {
      * @return Complete HTTP response (headers + body) as byte[]
      */
     public byte[] build() {
-        // Determine content body and length
         byte[] contentBody;
         int contentLength;
 
@@ -77,10 +77,8 @@ public class HttpResponseBuilder {
             contentLength = contentBody.length;
         }
 
-        // Build headers as String
         StringBuilder headerBuilder = new StringBuilder();
 
-        // Status line
         String reason = REASON_PHRASES.getOrDefault(statusCode, "");
         headerBuilder.append(PROTOCOL).append(" ").append(statusCode);
         if (!reason.isEmpty()) {
@@ -88,26 +86,20 @@ public class HttpResponseBuilder {
         }
         headerBuilder.append(CRLF);
 
-        // User-defined headers
         headers.forEach((k, v) -> headerBuilder.append(k).append(": ").append(v).append(CRLF));
 
-        // Auto-append Content-Length if not set.
         if (!headers.containsKey("Content-Length")) {
             headerBuilder.append("Content-Length: ").append(contentLength).append(CRLF);
         }
 
-        // Auto-append Connection if not set.
         if (!headers.containsKey("Connection")) {
             headerBuilder.append("Connection: close").append(CRLF);
         }
 
-        // Blank line before body
         headerBuilder.append(CRLF);
 
-        // Convert headers to bytes
         byte[] headerBytes = headerBuilder.toString().getBytes(StandardCharsets.UTF_8);
 
-        // Combine headers + body into single byte array
         byte[] response = new byte[headerBytes.length + contentBody.length];
         System.arraycopy(headerBytes, 0, response, 0, headerBytes.length);
         System.arraycopy(contentBody, 0, response, headerBytes.length, contentBody.length);
