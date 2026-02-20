@@ -11,7 +11,7 @@ public class App {
 
         AppConfig appConfig = ConfigLoader.loadOnce(configPath);
 
-        int port = ServerPortResolver.resolvePort(args);
+        int port = appConfig.server().port();
 
         new TcpServer(port).start();
     }
