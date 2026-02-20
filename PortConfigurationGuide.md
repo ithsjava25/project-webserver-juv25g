@@ -36,5 +36,3 @@ Prioritet:
 
 1. `application.yml` (`server.port`)
 2. Default (`8080`)
-
----
