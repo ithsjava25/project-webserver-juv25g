@@ -14,11 +14,23 @@ public class StaticFileHandler {
     private static final String WEB_ROOT = "www";
     private static final long FILE_SIZE_THRESHOLD = 1024 * 1024; // 1MB
     private static final int BUFFER_SIZE = 8192; // 8KB
+    private static final String DEFAULT_WEB_ROOT = "www";
     
+    private final String webRoot;
     private final CacheFilter cacheFilter = new CacheFilter();
 
+    // Konstruktor för produktion
+    public StaticFileHandler() {
+        this.webRoot = DEFAULT_WEB_ROOT;
+    }
+
+    // Konstruktor för testning
+    public StaticFileHandler(String webRoot) {
+        this.webRoot = webRoot;
+    }
+
     public void sendGetRequest(OutputStream outputStream, String uri) throws IOException {
-        File file = new File(WEB_ROOT, uri);
+        File file = new File(webRoot, uri);
         
         // Skicka headers först
         sendHttpHeaders(outputStream, file);
