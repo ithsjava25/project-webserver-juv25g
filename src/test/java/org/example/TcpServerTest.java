@@ -32,9 +32,9 @@ class TcpServerTest {
 
         String response = outputStream.toString();
         assertAll(
-                () -> assertTrue(response.contains("500"), "Statuskod 500 saknas"),
-                () -> assertTrue(response.contains("Internal Server Error"), "Felmeddelande saknas"),
-                () -> assertTrue(response.contains("Content-Type: text/plain"), "Content-Type header är felaktig")
+                () -> assertTrue(response.contains("500")),
+                () -> assertTrue(response.contains("⚠️ Internal Server Error 500 ⚠️")),
+                () -> assertTrue(response.contains("Content-Type: text/plain"))
         );
     }
 }
