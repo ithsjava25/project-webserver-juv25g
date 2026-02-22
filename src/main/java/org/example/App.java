@@ -11,6 +11,6 @@ public class App {
 
         AppConfig appConfig = ConfigLoader.loadOnce(configPath);
         int port = appConfig.server().port();
-        new TcpServer(port).start();
+        new TcpServer(port, ConnectionHandler::new).start();
     }
 }

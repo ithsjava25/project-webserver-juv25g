@@ -11,9 +11,11 @@ import java.util.Map;
 public class TcpServer {
 
     private final int port;
+    private final ConnectionFactory connectionFactory;
 
-    public TcpServer(int port) {
+    public TcpServer(int port, ConnectionFactory connectionFactory) {
         this.port = port;
+        this.connectionFactory = connectionFactory;
     }
 
     public void start() {
@@ -30,9 +32,11 @@ public class TcpServer {
         }
     }
 
-    private void handleClient(Socket client) {
-        try (ConnectionHandler connectionHandler = new ConnectionHandler(client)) {
-            connectionHandler.runConnectionHandler();
+    protected void handleClient(Socket client) {
+        try(client) {
+            try(ConnectionHandler handler = connectionFactory.create(client)){
+                handler.runConnectionHandler();
+            }
         } catch (Exception e) {
             handleInternalServerError(client);
         }
