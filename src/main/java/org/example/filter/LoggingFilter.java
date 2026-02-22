@@ -1,0 +1,39 @@
+package org.example.filter;
+
+import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
+
+import java.util.logging.Logger;
+
+public class LoggingFilter implements Filter {
+
+    private static final Logger logg = Logger.getLogger(LoggingFilter.class.getName());
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
+        long startTime = System.nanoTime();
+
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            long endTime = System.nanoTime();
+            long processingTimeInMs = (endTime - startTime) / 1000000;
+
+            String message = String.format("REQUEST: %s%s | STATUS: %s | TIME: %dms",
+                    request.getMethod(), request.getPath(), response.getStatusCode(), processingTimeInMs);
+
+            logg.info(message);
+        }
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}

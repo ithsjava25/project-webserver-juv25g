@@ -61,6 +61,10 @@ public class HttpResponseBuilder {
             Map.entry(SC_GATEWAY_TIMEOUT, "Gateway Timeout")
     );
 
+    public int getStatusCode() {
+        return statusCode;
+    }
+
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
