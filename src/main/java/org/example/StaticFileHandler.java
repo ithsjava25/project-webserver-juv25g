@@ -1,3 +1,4 @@
+
 package org.example;
 
 import org.example.http.HttpResponseBuilder;
@@ -11,11 +12,10 @@ import java.nio.file.Files;
 import java.util.Map;
 
 public class StaticFileHandler {
-    private static final String WEB_ROOT = "www";
     private static final long FILE_SIZE_THRESHOLD = 1024 * 1024; // 1MB
     private static final int BUFFER_SIZE = 8192; // 8KB
     private static final String DEFAULT_WEB_ROOT = "www";
-    
+
     private final String webRoot;
     private final CacheFilter cacheFilter = new CacheFilter();
 
@@ -31,10 +31,10 @@ public class StaticFileHandler {
 
     public void sendGetRequest(OutputStream outputStream, String uri) throws IOException {
         File file = new File(webRoot, uri);
-        
+
         // Skicka headers först
         sendHttpHeaders(outputStream, file);
-        
+
         // Skicka body baserat på filstorlek
         long fileSize = file.length();
         if (fileSize < FILE_SIZE_THRESHOLD) {
@@ -48,7 +48,7 @@ public class StaticFileHandler {
         HttpResponseBuilder response = new HttpResponseBuilder();
         response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
         response.setContentLength(file.length());
-        
+
         PrintWriter writer = new PrintWriter(outputStream, false);
         writer.print(response.buildHeaders());
         writer.flush();
@@ -56,9 +56,9 @@ public class StaticFileHandler {
 
     private void sendSmallFile(OutputStream outputStream, String uri, File file) throws IOException {
         byte[] fileBytes = cacheFilter.getOrFetch(uri,
-            path -> Files.readAllBytes(file.toPath())
+                path -> Files.readAllBytes(file.toPath())
         );
-        
+
         outputStream.write(fileBytes);
         outputStream.flush();
     }
@@ -67,11 +67,11 @@ public class StaticFileHandler {
         try (InputStream fileInputStream = Files.newInputStream(file.toPath())) {
             byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead;
-            
+
             while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
-            
+
             outputStream.flush();
         }
     }
