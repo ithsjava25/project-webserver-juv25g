@@ -34,9 +34,15 @@ public class TcpServer {
 
     protected void handleClient(Socket client) {
         try(client) {
-            try(ConnectionHandler handler = connectionFactory.create(client)){
-                handler.runConnectionHandler();
-            }
+            processRequest(client);
+        } catch (IOException e) {
+            System.err.println("Could not close client socket: " + e.getMessage());
+        }
+    }
+
+    private void processRequest(Socket client){
+        try(ConnectionHandler handler = connectionFactory.create(client)){
+            handler.runConnectionHandler();
         } catch (Exception e) {
             handleInternalServerError(client);
         }
@@ -48,10 +54,14 @@ public class TcpServer {
         response.setHeaders(Map.of("Content-Type", "text/plain; charset=utf-8"));
         response.setBody("⚠️ Internal Server Error 500 ⚠️");
 
-        try(PrintWriter writer = new PrintWriter(client.getOutputStream(), true)) {
-            writer.print(response.build());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to print error message", e);
+        if (!client.isClosed()) {
+            try {
+                PrintWriter writer = new PrintWriter(client.getOutputStream(), true);
+                writer.print(response.build());
+                writer.flush();
+            } catch (IOException e) {
+                System.err.println("Failed to send 500 response: " + e.getMessage());
+            }
         }
     }
 }
