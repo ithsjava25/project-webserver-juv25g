@@ -33,6 +33,10 @@ public class HttpResponseBuilder {
             Map.entry(503, "Service Unavailable")
     );
 
+    public int getStatusCode() {
+        return statusCode;
+    }
+
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
