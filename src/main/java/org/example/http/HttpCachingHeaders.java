@@ -21,6 +21,7 @@ public class HttpCachingHeaders {
      *  ETag helps cache be more efficient and not needing to send a full resend assuming the content has not changed
      *  Last-Modified
      */
+    
     private static final String CACHE_CONTROL = "Cache-Control";
     private static final String LAST_MODIFIED = "Last-Modified";
     private static final String ETAG = "ETag";
@@ -48,17 +49,7 @@ public class HttpCachingHeaders {
      * are added automatically to comply with RFC 7232.
      */
     public void addETagHeader(String etag) {
-        if (etag == null) return;
-
-        String formattedEtag;
-        if (etag.startsWith("\"") && etag.endsWith("W/\"") ) {
-            formattedEtag = etag;
-        } else {
-            formattedEtag = "\"" + etag + "\"";
-        }
-            setHeader(ETAG, etag);
-
-
+        setHeader(ETAG, etag);
     }
 
     /**
@@ -102,6 +93,8 @@ public class HttpCachingHeaders {
     public Map<String,String> getHeaders() {
         return new LinkedHashMap<>(headers);
     }
+
+
 
     /**
      * Standard settings for caching, 1 hour
