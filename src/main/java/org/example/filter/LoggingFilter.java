@@ -20,14 +20,11 @@ public class LoggingFilter implements Filter {
 
         try {
             chain.doFilter(request, response);
-        } catch (Exception e) {
-            if(response.getStatusCode() == HttpResponseBuilder.SC_OK)
-                response.setStatusCode(HttpResponseBuilder.SC_INTERNAL_SERVER_ERROR);
         } finally {
             long endTime = System.nanoTime();
             long processingTimeInMs = (endTime - startTime) / 1000000;
 
-            String message = String.format("REQUEST: %s %s | STATUS: %s | TIME: %dms",
+            String message = String.format("REQUEST: %s%s | STATUS: %s | TIME: %dms",
                     request.getMethod(), request.getPath(), response.getStatusCode(), processingTimeInMs);
 
             logg.info(message);
