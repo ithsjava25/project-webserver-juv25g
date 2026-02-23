@@ -83,7 +83,7 @@ class LocaleFilterTest {
     }
 
     @Test
-    void shouldUseDefaultWhenHeadersAreNull() {
+    void shouldUseDefaultWhenHeadersAreEmpty() {
         HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", null, null);
         HttpResponseBuilder response = new HttpResponseBuilder();
 
