@@ -61,7 +61,8 @@ public class CachingFilter implements Filter {
         cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
         cachingHeaders.setDefaultCacheControlStatic();
 
-        response.setHeaders(cachingHeaders.getHeaders());
+        //response.setHeaders(cachingHeaders.getHeaders());
+        response.addHeader("ETag", ETag);
 
     }
 

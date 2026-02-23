@@ -47,6 +47,10 @@ public class HttpResponseBuilder {
 
     }
 
+    public void addHeader(String key, String value){
+        this.headers.put(key, value);
+    }
+
 
 
 }
