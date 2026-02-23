@@ -52,6 +52,12 @@ public class LocaleFilter implements Filter {
         }
     }
 
+    /**
+     * Determines the preferred locale from the Accept-Language header of the request.
+     * If the header is missing, blank, or malformed, this method returns the default locale "en-US".
+     * The first language tag is used, and any optional quality value (e.g., ";q=0.9") is stripped.
+     * If the request itself is null, the default locale is also returned.
+     */
     private String resolveLocale(HttpRequest request) {
 
         if (request == null) {
@@ -78,10 +84,10 @@ public class LocaleFilter implements Filter {
         }
 
         String[] parts = acceptLanguage.split(",");
-        if (parts.length == 0 || parts[0].isBlank()) {
+        if (parts[0].isBlank()) {
             return DEFAULT_LOCALE;
         }
 
-        return parts[0].trim();
+        return parts[0].split(";")[0].trim();
     }
 }
