@@ -42,7 +42,7 @@ class CompressionFilterTest {
 
         byte[] compressedBody = getBodyFromResponse(response);
         assertNotNull(compressedBody, "Body should not be null");
-        assertTrue(compressedBody.length < largeBody.getBytes().length,
+        assertTrue(compressedBody.length < largeBody.getBytes(StandardCharsets.UTF_8).length,
                 "Compressed body should be smaller than original");
 
 
@@ -97,13 +97,14 @@ class CompressionFilterTest {
 
     private String decompressGzip(byte[] compressed) throws Exception {
         ByteArrayInputStream bais = new ByteArrayInputStream(compressed);
-        GZIPInputStream gzis = new GZIPInputStream(bais);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = gzis.read(buffer)) > 0) {
-            baos.write(buffer, 0, len);
+        try (GZIPInputStream gzis = new GZIPInputStream(bais)) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gzis.read(buffer)) > 0) {
+                baos.write(buffer, 0, len);
+            }
         }
 
         return baos.toString(StandardCharsets.UTF_8);
@@ -168,7 +169,7 @@ class CompressionFilterTest {
         filter.doFilter(request, response, mockChain);
 
         byte[] resultBody = getBodyFromResponse(response);
-        assertTrue(resultBody.length < jsonData.getBytes().length,
+        assertTrue(resultBody.length < jsonData.getBytes(StandardCharsets.UTF_8).length,
                 "JSON should be compressed");
     }
 
@@ -190,7 +191,7 @@ class CompressionFilterTest {
         filter.doFilter(request, response, mockChain);
 
         byte[] resultBody = getBodyFromResponse(response);
-        assertTrue(resultBody.length < body.getBytes().length,
+        assertTrue(resultBody.length < body.getBytes(StandardCharsets.UTF_8).length,
                 "Should compress even when Content-Type has charset");
     }
 }

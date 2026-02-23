@@ -30,7 +30,7 @@ import java.util.zip.GZIPOutputStream;
  *
  */
 
- public class CompressionFilter implements Filter {
+public class CompressionFilter implements Filter {
     private static final int MIN_COMPRESS_SIZE = 1024;
 
     private static final Set<String> COMPRESSIBLE_TYPES = Set.of(
@@ -62,45 +62,88 @@ import java.util.zip.GZIPOutputStream;
         compressIfNeeded(request, response);
     }
     private void compressIfNeeded(HttpRequest request, HttpResponseBuilder response) {
+        if (hasContentEncoding(response)) {
+            return;
+        }
+
         String acceptEncoding = getHeader(request, "Accept-Encoding");
         if (acceptEncoding == null || !acceptEncoding.toLowerCase().contains("gzip")) {
             return;
         }
 
-        System.out.println("Client accepts gzip compression");
-
         byte[] originalBody = getResponseBody(response);
         if (originalBody == null || originalBody.length < MIN_COMPRESS_SIZE) {
-            System.out.println("Body too small to compress: " +
-                    (originalBody != null ? originalBody.length : 0) + " bytes");
             return;
         }
 
         String contentType = getResponseContentType(response);
         if (!shouldCompress(contentType)) {
-            System.out.println("Skipping compression for content-type: " + contentType);
             return;
         }
 
         try {
             byte[] compressed = gzipCompress(originalBody);
-            System.out.println("Compressed " + originalBody.length +
-                    " bytes to " + compressed.length + " bytes (" +
-                    (100 - (compressed.length * 100 / originalBody.length)) + "% reduction)");
 
             response.setBody(compressed);
 
             Map<String, String> newHeaders = new HashMap<>();
             newHeaders.put("Content-Encoding", "gzip");
-            newHeaders.put("Vary", "Accept-Encoding");
+
+            String existingVary = getResponseHeader(response, "Vary");
+            if (existingVary != null && !existingVary.isEmpty()) {
+                if (!existingVary.toLowerCase().contains("accept-encoding")) {
+                    newHeaders.put("Vary", existingVary + ", Accept-Encoding");
+                } else {
+                    newHeaders.put("Vary", existingVary);
+                }
+            } else {
+                newHeaders.put("Vary", "Accept-Encoding");
+            }
 
             response.setHeaders(mergeHeaders(response, newHeaders));
-            System.out.println("Added Content-Encoding: gzip header");
 
         } catch (IOException e) {
-            System.err.println("Gzip compression failed: " + e.getMessage());
         }
     }
+
+    private boolean hasContentEncoding(HttpResponseBuilder response) {
+        try {
+            var field = response.getClass().getDeclaredField("headers");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> headers = (Map<String, String>) field.get(response);
+
+            if (headers != null) {
+                for (String key : headers.keySet()) {
+                    if (key.equalsIgnoreCase("Content-Encoding")) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return false;
+    }
+
+    private String getResponseHeader(HttpResponseBuilder response, String headerName) {
+        try {
+            var field = response.getClass().getDeclaredField("headers");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> headers = (Map<String, String>) field.get(response);
+
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    if (entry.getKey().equalsIgnoreCase(headerName)) {
+                        return entry.getValue();
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
     private Map<String, String> mergeHeaders(HttpResponseBuilder response,
                                              Map<String, String> newHeaders) {
         Map<String, String> merged = new HashMap<>();
@@ -112,10 +155,13 @@ import java.util.zip.GZIPOutputStream;
             @SuppressWarnings("unchecked")
             Map<String, String> existing = (Map<String, String>) field.get(response);
             if (existing != null) {
-                merged.putAll(existing);
+                for (Map.Entry<String, String> entry : existing.entrySet()) {
+                    if (!entry.getKey().equalsIgnoreCase("Content-Length")) {
+                        merged.put(entry.getKey(), entry.getValue());
+                    }
+                }
             }
         } catch (Exception e) {
-            System.err.println("Could not read existing headers: " + e.getMessage());
         }
 
         merged.putAll(newHeaders);
@@ -136,7 +182,6 @@ import java.util.zip.GZIPOutputStream;
                 }
             }
         } catch (Exception e) {
-            System.err.println("Could not read Content-Type: " + e.getMessage());
         }
         return null;
     }
@@ -197,7 +242,6 @@ import java.util.zip.GZIPOutputStream;
             return null;
 
         } catch (Exception e) {
-            System.err.println("Failed to get response body: " + e.getMessage());
             return null;
         }
     }
