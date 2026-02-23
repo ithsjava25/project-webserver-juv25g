@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.example.http.HttpResponseBuilder.*;
 
 class HttpResponseBuilderTest {
 
@@ -25,13 +26,14 @@ class HttpResponseBuilderTest {
     @Test
     void build_returnsValidHttpResponse() {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
         builder.setBody("Hello");
 
         byte[] result = builder.build();
         String resultStr = asString(result);
 
         assertThat(resultStr)
-                .contains("HTTP/1.1 200 OK")
+                .contains("HTTP/1.1 " + SC_OK + " OK")
                 .contains("Content-Length: 5")
                 .contains("\r\n\r\n")
                 .contains("Hello");
@@ -49,6 +51,7 @@ class HttpResponseBuilderTest {
     @DisplayName("Should calculate correct Content-Length for various strings")
     void build_handlesUtf8ContentLength(String body, int expectedLength) {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
         builder.setBody(body);
 
         byte[] result = builder.build();
@@ -62,6 +65,7 @@ class HttpResponseBuilderTest {
     void setHeader_addsHeaderToResponse() {
         HttpResponseBuilder builder = new HttpResponseBuilder();
         builder.setHeader("Content-Type", "text/html; charset=UTF-8");
+        builder.setStatusCode(SC_OK);
         builder.setBody("Hello");
 
         byte[] result = builder.build();
@@ -76,6 +80,7 @@ class HttpResponseBuilderTest {
         HttpResponseBuilder builder = new HttpResponseBuilder();
         builder.setHeader("Content-Type", "application/json");
         builder.setHeader("Cache-Control", "no-cache");
+        builder.setStatusCode(SC_OK);
         builder.setBody("{}");
 
         byte[] result = builder.build();
@@ -107,6 +112,7 @@ class HttpResponseBuilderTest {
     void setContentTypeFromFilename_detectsVariousTypes(String filename, String expectedContentType) {
         HttpResponseBuilder builder = new HttpResponseBuilder();
         builder.setContentTypeFromFilename(filename);
+        builder.setStatusCode(SC_OK);
         builder.setBody("test content");
 
         byte[] result = builder.build();
@@ -130,6 +136,7 @@ class HttpResponseBuilderTest {
     void setContentTypeFromFilename_allCases(String filename, String expectedContentType) {
         HttpResponseBuilder builder = new HttpResponseBuilder();
         builder.setContentTypeFromFilename(filename);
+        builder.setStatusCode(SC_OK);
         builder.setBody("test");
 
         byte[] result = builder.build();
@@ -143,6 +150,7 @@ class HttpResponseBuilderTest {
     @DisplayName("Should not duplicate headers when manually set")
     void build_doesNotDuplicateHeaders(String headerName, String manualValue, String bodyContent) {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
         builder.setHeader(headerName, manualValue);
         builder.setBody(bodyContent);
 
@@ -179,6 +187,7 @@ class HttpResponseBuilderTest {
         builder.setHeaders(headers);
 
         builder.setHeader("Content-Length", "100");
+        builder.setStatusCode(SC_OK);
         builder.setBody("Hello");
 
         byte[] result = builder.build();
@@ -287,6 +296,7 @@ class HttpResponseBuilderTest {
     @DisplayName("Should auto-append headers when not manually set")
     void build_autoAppendsHeadersWhenNotSet() {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
         builder.setBody("Hello");
 
         byte[] result = builder.build();
@@ -303,6 +313,7 @@ class HttpResponseBuilderTest {
         HttpResponseBuilder builder = new HttpResponseBuilder();
         builder.setHeader("Content-Type", "text/html");
         builder.setHeader("Cache-Control", "no-cache");
+        builder.setStatusCode(SC_OK);
         builder.setBody("Hello");
 
         byte[] result = builder.build();
@@ -328,6 +339,7 @@ class HttpResponseBuilderTest {
         HttpResponseBuilder builder = new HttpResponseBuilder();
 
         builder.setHeader(headerName, headerValue);
+        builder.setStatusCode(SC_OK);
         builder.setBody("Hello");
 
         byte[] result = builder.build();
@@ -350,13 +362,14 @@ class HttpResponseBuilderTest {
     @DisplayName("Should handle empty and null body")
     void build_emptyAndNullBody(String body, int expectedLength) {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
         builder.setBody(body);
 
         byte[] result = builder.build();
         String resultStr = asString(result);
 
         assertThat(resultStr)
-                .contains("HTTP/1.1 200 OK")
+                .contains("HTTP/1.1 " + SC_OK + " OK")
                 .contains("Content-Length: " + expectedLength);
     }
 
@@ -373,6 +386,7 @@ class HttpResponseBuilderTest {
         HttpResponseBuilder builder = new HttpResponseBuilder();
         builder.setHeader(headerName, firstValue);
         builder.setHeader(headerName, secondValue);  // Override
+        builder.setStatusCode(SC_OK);
         builder.setBody("Test");
 
         byte[] result = builder.build();
@@ -390,6 +404,7 @@ class HttpResponseBuilderTest {
     void build_autoAppendsSpecificHeaders(String body, boolean setContentLength, boolean setConnection,
                                           String expectedContentLength, String expectedConnection) {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
 
         if (setContentLength) {
             builder.setHeader("Content-Length", "999");
@@ -425,6 +440,7 @@ class HttpResponseBuilderTest {
     @DisplayName("Should preserve binary content without corruption")
     void build_preservesBinaryContent() {
         HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setStatusCode(SC_OK);
 
         // Create binary data with non-UTF-8 bytes
         byte[] binaryData = new byte[]{
