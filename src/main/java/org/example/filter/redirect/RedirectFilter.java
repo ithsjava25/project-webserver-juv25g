@@ -27,8 +27,8 @@ public final class RedirectFilter implements Filter {
         String path = request.getPath();
 
         for (RedirectRule rule : rules) {
-            if (rule.matches(path)) {
-                LOG.info(() -> "Redirecting " + path + " -> " + rule.getTargetUrl() + " (" + rule.getStatusCode() + ")");
+                final String sanitizedPath = path.replaceAll("[\\r\\n]", "_");
+                LOG.info(() -> "Redirecting " + sanitizedPath + " -> " + rule.getTargetUrl() + " (" + rule.getStatusCode() + ")");
                 response.setStatusCode(rule.getStatusCode());
                 response.setHeader("Location", rule.getTargetUrl());
                 return; // STOP pipeline
