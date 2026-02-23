@@ -9,6 +9,7 @@ import java.util.List;
 import org.example.filter.Filter;
 import org.example.filter.FilterChainImpl;
 import org.example.http.HttpResponseBuilder;
+import org.example.config.ConfigLoader;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -17,10 +18,23 @@ public class ConnectionHandler implements AutoCloseable {
 
     Socket client;
     String uri;
+    private final List<Filter> filters;
 
     public ConnectionHandler(Socket client) {
         this.client = client;
+        this.filters = buildFilters();
     }
+private List<Filter> buildFilters() {
+        List<Filter> list = new ArrayList<>();
+        AppConfig config = ConfigLoader.get();
+        AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
+        if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
+            list.add(createIpFilterFromConfig(ipFilterConfig));
+        }
+        // Add more filters here
+        return list;
+        }
+
 
     public void runConnectionHandler() throws IOException {
         HttpParser parser = new HttpParser();
@@ -56,17 +70,6 @@ public class ConnectionHandler implements AutoCloseable {
 
     private HttpResponseBuilder applyFilters(HttpRequest request) {
         HttpResponseBuilder response = new HttpResponseBuilder();
-
-        List<Filter> filters = new ArrayList<>();
-
-        AppConfig config = org.example.config.ConfigLoader.get();
-        AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
-        if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
-            filters.add(createIpFilterFromConfig(ipFilterConfig));
-        }
-
-        // Add more filters here
-        // filters.add(new AuthFilter());
 
         FilterChainImpl chain = new FilterChainImpl(filters);
         chain.doFilter(request, response);
