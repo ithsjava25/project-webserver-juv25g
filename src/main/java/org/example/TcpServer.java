@@ -3,9 +3,11 @@ package org.example;
 import org.example.http.HttpResponseBuilder;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class TcpServer {
@@ -33,32 +35,37 @@ public class TcpServer {
     }
 
     protected void handleClient(Socket client) {
-        try(client) {
+        try(client){
             processRequest(client);
-        } catch (IOException e) {
-            System.err.println("Could not close client socket: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to close socket", e);
         }
     }
 
-    private void processRequest(Socket client){
-        try(ConnectionHandler handler = connectionFactory.create(client)){
+    private void processRequest(Socket client) throws Exception {
+        ConnectionHandler handler = null;
+        try{
+            handler = connectionFactory.create(client);
             handler.runConnectionHandler();
         } catch (Exception e) {
             handleInternalServerError(client);
+        } finally {
+            if(handler != null)
+                handler.close();
         }
     }
+
 
     private void handleInternalServerError(Socket client){
         HttpResponseBuilder response = new HttpResponseBuilder();
         response.setStatusCode(500);
         response.setHeaders(Map.of("Content-Type", "text/plain; charset=utf-8"));
-        response.setBody("⚠️ Internal Server Error 500 ⚠️");
+        response.setBody("Internal Server Error 500");
 
         if (!client.isClosed()) {
             try {
                 PrintWriter writer = new PrintWriter(client.getOutputStream(), true);
-                writer.print(response.build());
-                writer.flush();
+                writer.println(response.build());
             } catch (IOException e) {
                 System.err.println("Failed to send 500 response: " + e.getMessage());
             }
