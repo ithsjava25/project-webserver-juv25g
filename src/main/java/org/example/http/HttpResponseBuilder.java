@@ -1,5 +1,5 @@
 package org.example.http;
-//
+////
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,5 +46,7 @@ public class HttpResponseBuilder {
         return sb.toString();
 
     }
+
+
 
 }
