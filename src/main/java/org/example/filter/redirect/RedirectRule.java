@@ -10,6 +10,10 @@ public final class RedirectRule {
     public RedirectRule(Pattern sourcePattern, String targetUrl, int statusCode) {
         this.sourcePattern = Objects.requireNonNull(sourcePattern, "sourcePattern");
         this.targetUrl = Objects.requireNonNull(targetUrl, "targetUrl");
+        if (this.targetUrl.isBlank()) {
+            throw new IllegalArgumentException("targetUrl must not be blank");
+}
+
         if (statusCode != 301 && statusCode != 302) {
             throw new IllegalArgumentException("statusCode must be 301 or 302");
         }
