@@ -17,13 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RedirectFilterTest {
 
     private static HttpRequest request(String path) {
-        return new HttpRequest(
-                "GET",
-                path,
-                "HTTP/1.1",
-                Map.of(),
-                null
-        );
+        return new HttpRequest("GET", path, "HTTP/1.1", Map.of(), null);
     }
 
     private static String responseAsString(HttpResponseBuilder response) {
@@ -50,27 +44,22 @@ class RedirectFilterTest {
     }
 
     @Test
-void returns_302_redirect() {
-    RedirectFilter filter = new RedirectFilter(List.of(
-            new RedirectRule(Pattern.compile("^/temp$"), "https://example.com/temporary", 302)
-    ));
+    void returns_302_redirect_and_stops_pipeline() {
+        RedirectFilter filter = new RedirectFilter(List.of(
+                new RedirectRule(Pattern.compile("^/temp$"), "https://example.com/temporary", 302)
+        ));
 
-    AtomicBoolean chainCalled = new AtomicBoolean(false);
-    FilterChain chain = (req, res) -> {
-        chainCalled.set(true);
-        res.setStatusCode(200);
-    };
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, res) -> chainCalled.set(true);
 
-    HttpResponseBuilder res = new HttpResponseBuilder();
+        HttpResponseBuilder res = new HttpResponseBuilder();
 
-    filter.doFilter(request("/temp"), res, chain);
+        filter.doFilter(request("/temp"), res, chain);
 
-    String raw = responseAsString(res);
-    assertThat(raw).contains("HTTP/1.1 302 Found");
-    assertThat(raw).contains("Location: https://example.com/temporary");
-    assertThat(chainCalled.get()).isFalse();
-    }
-
+        String raw = responseAsString(res);
+        assertThat(raw).contains("HTTP/1.1 302 Found");
+        assertThat(raw).contains("Location: https://example.com/temporary");
+        assertThat(chainCalled.get()).isFalse();
     }
 
     @Test
