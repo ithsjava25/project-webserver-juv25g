@@ -88,6 +88,11 @@ public class LocaleFilter implements Filter {
             return DEFAULT_LOCALE;
         }
 
-        return parts[0].split(";")[0].trim();
+        String locale = parts[0].split(";")[0].trim();
+        if (locale.isEmpty()) {
+            return DEFAULT_LOCALE;
+        } else {
+            return locale;
+        }
     }
 }
