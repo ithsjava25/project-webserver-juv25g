@@ -10,7 +10,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
-public class CompressionFilter implements Filter {
+/**
+ * Compression filter that compresses HTTP responses with gzip when supported by client.
+ *
+ * <p>This filter applies gzip compression to HTTP responses when the following conditions are met:
+ * <ul>
+ *   <li>Client sends Accept-Encoding header containing "gzip"</li>
+ *   <li>Response body is larger than 1KB (MIN_COMPRESS_SIZE)</li>
+ *   <li>Content-Type is compressible (text-based formats like HTML, CSS, JS, JSON)</li>
+ *   <li>Content-Type is not already compressed (images, videos, zip files)</li>
+ * </ul>
+ *
+ * <p>When compression is applied, the filter:
+ * <ul>
+ *   <li>Compresses the response body using gzip</li>
+ *   <li>Sets Content-Encoding: gzip header</li>
+ *   <li>Sets Vary: Accept-Encoding header for proper caching</li>
+ * </ul>
+ *
+ */
+
+ public class CompressionFilter implements Filter {
     private static final int MIN_COMPRESS_SIZE = 1024;
 
     private static final Set<String> COMPRESSIBLE_TYPES = Set.of(
