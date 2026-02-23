@@ -15,7 +15,7 @@ public final class RedirectRulesLoader {
         String trimmed = sourcePath.trim();
 
         if (trimmed.startsWith(REGEX_PREFIX)) {
-            String rawRegex = trimmed.substring(REGEX_PREFIX.length());
+            String rawRegex = trimmed.substring(REGEX_PREFIX.length()).strip();
             if (rawRegex.isBlank()) {
                 throw new IllegalArgumentException("regex sourcePath must not be blank");
             }
