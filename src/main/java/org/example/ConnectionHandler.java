@@ -4,6 +4,11 @@ import org.example.config.AppConfig;
 import org.example.filter.IpFilter;
 import org.example.httpparser.HttpParser;
 import org.example.httpparser.HttpRequest;
+import java.util.ArrayList;
+import java.util.List;
+import org.example.filter.Filter;
+import org.example.filter.FilterChainImpl;
+import org.example.http.HttpResponseBuilder;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -23,7 +28,6 @@ public class ConnectionHandler implements AutoCloseable {
         parser.parseRequest();
         parser.parseHttp();
 
-        // Create HttpRequest object
         HttpRequest request = new HttpRequest(
                 parser.getMethod(),
                 parser.getUri(),
@@ -32,39 +36,42 @@ public class ConnectionHandler implements AutoCloseable {
                 ""
         );
 
-        // Set client IP address
         String clientIp = client.getInetAddress().getHostAddress();
         request.setAttribute("clientIp", clientIp);
 
-        // Check if IP filter is enabled
-        AppConfig config = org.example.config.ConfigLoader.get();
-        AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
+        HttpResponseBuilder response = applyFilters(request);
 
-        if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
-            // Create and run IP filter
-            IpFilter ipFilter = createIpFilterFromConfig(ipFilterConfig);
-            org.example.http.HttpResponseBuilder response = new org.example.http.HttpResponseBuilder();
-
-            ipFilter.doFilter(request, response, (req, resp) -> {
-                // This lambda is called if IP is allowed
-                // We don't do anything here, just continue
-            });
-
-            // Check if the IP was blocked by examining the status code
-            int statusCode = response.getStatusCode();
-            if (statusCode == 403 || statusCode == 400) {
-                // IP was blocked - send error response and return
-                byte[] responseBytes = response.build();
-                client.getOutputStream().write(responseBytes);
-                client.getOutputStream().flush();
-                return;
-            }
+        int statusCode = response.getStatusCode();
+        if (statusCode == 403 || statusCode == 400) {
+            byte[] responseBytes = response.build();
+            client.getOutputStream().write(responseBytes);
+            client.getOutputStream().flush();
+            return;
         }
 
-        // IP is allowed (or filter disabled) - continue with normal file serving
         resolveTargetFile(parser.getUri());
         StaticFileHandler sfh = new StaticFileHandler();
         sfh.sendGetRequest(client.getOutputStream(), uri);
+    }
+
+    private HttpResponseBuilder applyFilters(HttpRequest request) {
+        HttpResponseBuilder response = new HttpResponseBuilder();
+
+        List<Filter> filters = new ArrayList<>();
+
+        AppConfig config = org.example.config.ConfigLoader.get();
+        AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
+        if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
+            filters.add(createIpFilterFromConfig(ipFilterConfig));
+        }
+
+        // Add more filters here
+        // filters.add(new AuthFilter());
+
+        FilterChainImpl chain = new FilterChainImpl(filters);
+        chain.doFilter(request, response);
+
+        return response;
     }
 
     private void resolveTargetFile(String uri) {
