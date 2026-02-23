@@ -64,8 +64,9 @@ public class TcpServer {
 
         if (!client.isClosed()) {
             try {
-                PrintWriter writer = new PrintWriter(client.getOutputStream(), true);
-                writer.println(response.build());
+                OutputStream out = client.getOutputStream();
+                out.write(response.build().getBytes(StandardCharsets.UTF_8));
+                out.flush();
             } catch (IOException e) {
                 System.err.println("Failed to send 500 response: " + e.getMessage());
             }
