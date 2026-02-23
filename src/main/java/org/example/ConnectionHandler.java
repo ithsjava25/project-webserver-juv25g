@@ -31,7 +31,7 @@ private List<Filter> buildFilters() {
         if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
             list.add(createIpFilterFromConfig(ipFilterConfig));
         }
-        // Add more filters here
+        // Add more filters here.
         return list;
         }
 
