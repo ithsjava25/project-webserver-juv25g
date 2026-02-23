@@ -50,20 +50,27 @@ class RedirectFilterTest {
     }
 
     @Test
-    void returns_302_redirect() {
-        RedirectFilter filter = new RedirectFilter(List.of(
-                new RedirectRule(Pattern.compile("^/temp$"), "https://example.com/temporary", 302)
-        ));
+void returns_302_redirect() {
+    RedirectFilter filter = new RedirectFilter(List.of(
+            new RedirectRule(Pattern.compile("^/temp$"), "https://example.com/temporary", 302)
+    ));
 
-        FilterChain chain = (req, res) -> res.setStatusCode(200);
+    AtomicBoolean chainCalled = new AtomicBoolean(false);
+    FilterChain chain = (req, res) -> {
+        chainCalled.set(true);
+        res.setStatusCode(200);
+    };
 
-        HttpResponseBuilder res = new HttpResponseBuilder();
+    HttpResponseBuilder res = new HttpResponseBuilder();
 
-        filter.doFilter(request("/temp"), res, chain);
+    filter.doFilter(request("/temp"), res, chain);
 
-        String raw = responseAsString(res);
-        assertThat(raw).contains("HTTP/1.1 302 Found");
-        assertThat(raw).contains("Location: https://example.com/temporary");
+    String raw = responseAsString(res);
+    assertThat(raw).contains("HTTP/1.1 302 Found");
+    assertThat(raw).contains("Location: https://example.com/temporary");
+    assertThat(chainCalled.get()).isFalse();
+    }
+
     }
 
     @Test
