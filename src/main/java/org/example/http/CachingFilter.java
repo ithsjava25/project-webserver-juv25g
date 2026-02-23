@@ -2,6 +2,7 @@ package org.example.http;
 
 import org.example.filter.Filter;
 import org.example.filter.FilterChain;
+import org.example.httpparser.HttpRequest;
 
 import java.io.File;
 import java.time.Instant;
