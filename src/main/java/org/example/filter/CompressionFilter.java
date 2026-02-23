@@ -5,6 +5,7 @@ import org.example.httpparser.HttpRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
@@ -45,9 +46,36 @@ public class CompressionFilter implements Filter {
 
             response.setBody(compressed);
 
+            Map<String, String> newHeaders = new HashMap<>();
+            newHeaders.put("Content-Encoding", "gzip");
+            newHeaders.put("Vary", "Accept-Encoding");
+
+            response.setHeaders(mergeHeaders(response, newHeaders));
+            System.out.println("Added Content-Encoding: gzip header");
+
         } catch (IOException e) {
             System.err.println("Gzip compression failed: " + e.getMessage());
         }
+    }
+    private Map<String, String> mergeHeaders(HttpResponseBuilder response,
+                                             Map<String, String> newHeaders) {
+        Map<String, String> merged = new HashMap<>();
+
+
+        try {
+            var field = response.getClass().getDeclaredField("headers");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> existing = (Map<String, String>) field.get(response);
+            if (existing != null) {
+                merged.putAll(existing);
+            }
+        } catch (Exception e) {
+            System.err.println("Could not read existing headers: " + e.getMessage());
+        }
+
+        merged.putAll(newHeaders);
+        return merged;
     }
     private String getHeader(HttpRequest request, String headerName) {
         Map<String, String> headers = request.getHeaders();
