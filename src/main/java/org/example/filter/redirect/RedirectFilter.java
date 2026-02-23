@@ -24,19 +24,28 @@ public final class RedirectFilter implements Filter {
 
     @Override
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
-        String path = request.getPath();
+    String path = request.getPath();
 
-        for (RedirectRule rule : rules) {
-                final String sanitizedPath = path.replaceAll("[\\r\\n]", "_");
-                LOG.info(() -> "Redirecting " + sanitizedPath + " -> " + rule.getTargetUrl() + " (" + rule.getStatusCode() + ")");
-                response.setStatusCode(rule.getStatusCode());
-                response.setHeader("Location", rule.getTargetUrl());
-                return; // STOP pipeline
-            }
-        }
-
+    if (path == null) {
         chain.doFilter(request, response);
+        return;
     }
+
+    for (RedirectRule rule : rules) {
+        if (rule.matches(path)) {   // <-- DENNA RADEN SKA FINNAS
+            final String sanitizedPath = path.replaceAll("[\\r\\n]", "_");
+            LOG.info(() -> "Redirecting " + sanitizedPath + " -> " 
+                    + rule.getTargetUrl() + " (" + rule.getStatusCode() + ")");
+
+            response.setStatusCode(rule.getStatusCode());
+            response.setHeader("Location", rule.getTargetUrl());
+            return; // STOP pipeline
+        }
+    }
+
+    chain.doFilter(request, response);
+}
+
 
     @Override
     public void destroy() {
