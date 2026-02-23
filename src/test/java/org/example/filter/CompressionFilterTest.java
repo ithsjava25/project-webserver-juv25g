@@ -128,4 +128,69 @@ class CompressionFilterTest {
             throw new RuntimeException("Failed to get body", e);
         }
     }
+    @Test
+    void testSkipCompressionForImages() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "gzip");
+
+        HttpRequest request = new HttpRequest("GET", "/image.jpg", "HTTP/1.1", headers, null);
+
+        String largeImageData = "fake image data ".repeat(200);
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setBody(largeImageData);
+        response.setHeaders(Map.of("Content-Type", "image/jpeg"));
+
+        FilterChain mockChain = (req, res) -> {};
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(request, response, mockChain);
+
+        byte[] resultBody = getBodyFromResponse(response);
+        assertArrayEquals(largeImageData.getBytes(StandardCharsets.UTF_8), resultBody,
+                "Images should not be compressed");
+    }
+
+    @Test
+    void testCompressJsonResponse() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "gzip");
+
+        HttpRequest request = new HttpRequest("GET", "/api/data", "HTTP/1.1", headers, null);
+
+        String jsonData = "{\"data\": " + "\"value\",".repeat(200) + "}";
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setBody(jsonData);
+        response.setHeaders(Map.of("Content-Type", "application/json"));
+
+        FilterChain mockChain = (req, res) -> {};
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(request, response, mockChain);
+
+        byte[] resultBody = getBodyFromResponse(response);
+        assertTrue(resultBody.length < jsonData.getBytes().length,
+                "JSON should be compressed");
+    }
+
+    @Test
+    void testHandleContentTypeWithCharset() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "gzip");
+
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+
+        String body = "<html>" + "content ".repeat(200) + "</html>";
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setBody(body);
+        response.setHeaders(Map.of("Content-Type", "text/html; charset=UTF-8"));
+
+        FilterChain mockChain = (req, res) -> {};
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(request, response, mockChain);
+
+        byte[] resultBody = getBodyFromResponse(response);
+        assertTrue(resultBody.length < body.getBytes().length,
+                "Should compress even when Content-Type has charset");
+    }
 }

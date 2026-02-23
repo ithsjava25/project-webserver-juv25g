@@ -7,10 +7,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 public class CompressionFilter implements Filter {
     private static final int MIN_COMPRESS_SIZE = 1024;
+
+    private static final Set<String> COMPRESSIBLE_TYPES = Set.of(
+            "text/html",
+            "text/css",
+            "text/javascript",
+            "application/javascript",
+            "application/json",
+            "application/xml",
+            "text/plain"
+    );
+
+    private static final Set<String> SKIP_TYPES = Set.of(
+            "image/jpeg", "image/jpg", "image/png", "image/gif",
+            "image/webp", "video/mp4", "application/zip",
+            "application/gzip", "application/x-gzip"
+    );
+
 
     @Override
     public void init() {
@@ -35,6 +53,12 @@ public class CompressionFilter implements Filter {
         if (originalBody == null || originalBody.length < MIN_COMPRESS_SIZE) {
             System.out.println("Body too small to compress: " +
                     (originalBody != null ? originalBody.length : 0) + " bytes");
+            return;
+        }
+
+        String contentType = getResponseContentType(response);
+        if (!shouldCompress(contentType)) {
+            System.out.println("Skipping compression for content-type: " + contentType);
             return;
         }
 
@@ -76,6 +100,39 @@ public class CompressionFilter implements Filter {
 
         merged.putAll(newHeaders);
         return merged;
+    }
+    private String getResponseContentType(HttpResponseBuilder response) {
+        try {
+            var field = response.getClass().getDeclaredField("headers");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> headers = (Map<String, String>) field.get(response);
+
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    if (entry.getKey().equalsIgnoreCase("Content-Type")) {
+                        return entry.getValue();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Could not read Content-Type: " + e.getMessage());
+        }
+        return null;
+    }
+    private boolean shouldCompress(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        String baseType = contentType.split(";")[0].trim().toLowerCase();
+
+        if (SKIP_TYPES.contains(baseType)) {
+            return false;
+        }
+
+        return COMPRESSIBLE_TYPES.contains(baseType) ||
+                baseType.startsWith("text/");
     }
     private String getHeader(HttpRequest request, String headerName) {
         Map<String, String> headers = request.getHeaders();
