@@ -14,9 +14,16 @@
         <junit.jupiter.version>6.0.2</junit.jupiter.version>
         <assertj.core.version>3.27.7</assertj.core.version>
         <mockito.version>5.21.0</mockito.version>
+        <bucket4j.version>8.14.0</bucket4j.version>
+
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-core</artifactId>
+            <version>${bucket4j.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -47,6 +54,18 @@
             <version>4.3.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

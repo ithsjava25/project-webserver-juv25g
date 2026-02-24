@@ -1,6 +1,9 @@
 package org.example.httpparser;
 
 import java.util.Collections;
+
+import java.util.HashMap;
+
 import java.util.Map;
 
 /*
@@ -15,6 +18,10 @@ public class HttpRequest {
         private final String version;
         private final Map<String, String> headers;
         private final String body;
+
+
+        private final Map<String, Object> attributes = new HashMap<>();
+
 
         public HttpRequest(String method,
                            String path,
@@ -38,4 +45,13 @@ public class HttpRequest {
             return headers; }
         public String getBody() {
             return body; }
+
+
+        public void setAttribute(String key, Object value) {
+            attributes.put(key, value);
+        }
+        public Object getAttribute(String key) {
+            return attributes.get(key);
+        }
+
     }

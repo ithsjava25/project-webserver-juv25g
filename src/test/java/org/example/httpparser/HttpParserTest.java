@@ -2,9 +2,7 @@ package org.example.httpparser;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 
@@ -19,7 +17,8 @@ class HttpParserTest {
         String testInput = "GET /index.html HTTP/1.1\r\nHost: localhost\r\nContent-Type: text/plain\r\nUser-Agent: JUnit5\r\n\r\n";
         InputStream in = new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
 
-        httpParser.parseHttp(in);
+        httpParser.setReader(in);
+        httpParser.parseHttp();
 
         assertNotNull(httpParser.getHeadersMap());
         assertThat(httpParser.getHeadersMap().size()).isEqualTo(3);
@@ -31,7 +30,8 @@ class HttpParserTest {
     @Test
     void testParseHttp_EmptyInput() throws IOException {
         InputStream in = new ByteArrayInputStream("".getBytes());
-        httpParser.parseHttp(in);
+        httpParser.setReader(in);
+        httpParser.parseHttp();
 
         assertTrue(httpParser.getHeadersMap().isEmpty());
     }
@@ -41,7 +41,8 @@ class HttpParserTest {
         String rawInput = "Host: localhost\r\n InvalidLineWithoutColon\r\n Accept: */*\r\n\r\n";
 
         InputStream in = new ByteArrayInputStream(rawInput.getBytes(StandardCharsets.UTF_8));
-        httpParser.parseHttp(in);
+        httpParser.setReader(in);
+        httpParser.parseHttp();
 
         assertEquals(2, httpParser.getHeadersMap().size());
         assertEquals("localhost", httpParser.getHeadersMap().get("Host"));
