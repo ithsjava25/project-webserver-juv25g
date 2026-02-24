@@ -5,7 +5,6 @@ import org.example.httpparser.HttpRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
@@ -61,8 +60,9 @@ public class CompressionFilter implements Filter {
 
         compressIfNeeded(request, response);
     }
+
     private void compressIfNeeded(HttpRequest request, HttpResponseBuilder response) {
-        if (hasContentEncoding(response)) {
+        if (response.getHeader("Content-Encoding") != null) {
             return;
         }
 
@@ -71,12 +71,12 @@ public class CompressionFilter implements Filter {
             return;
         }
 
-        byte[] originalBody = getResponseBody(response);
+        byte[] originalBody = response.getBodyBytes();
         if (originalBody == null || originalBody.length < MIN_COMPRESS_SIZE) {
             return;
         }
 
-        String contentType = getResponseContentType(response);
+        String contentType = response.getHeader("Content-Type");
         if (!shouldCompress(contentType)) {
             return;
         }
@@ -85,106 +85,21 @@ public class CompressionFilter implements Filter {
             byte[] compressed = gzipCompress(originalBody);
 
             response.setBody(compressed);
+            response.setHeader("Content-Encoding", "gzip");
 
-            Map<String, String> newHeaders = new HashMap<>();
-            newHeaders.put("Content-Encoding", "gzip");
-
-            String existingVary = getResponseHeader(response, "Vary");
+            String existingVary = response.getHeader("Vary");
             if (existingVary != null && !existingVary.isEmpty()) {
                 if (!existingVary.toLowerCase().contains("accept-encoding")) {
-                    newHeaders.put("Vary", existingVary + ", Accept-Encoding");
-                } else {
-                    newHeaders.put("Vary", existingVary);
+                    response.setHeader("Vary", existingVary + ", Accept-Encoding");
                 }
             } else {
-                newHeaders.put("Vary", "Accept-Encoding");
+                response.setHeader("Vary", "Accept-Encoding");
             }
-
-            response.setHeaders(mergeHeaders(response, newHeaders));
 
         } catch (IOException e) {
         }
     }
 
-    private boolean hasContentEncoding(HttpResponseBuilder response) {
-        try {
-            var field = response.getClass().getDeclaredField("headers");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            Map<String, String> headers = (Map<String, String>) field.get(response);
-
-            if (headers != null) {
-                for (String key : headers.keySet()) {
-                    if (key.equalsIgnoreCase("Content-Encoding")) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-        return false;
-    }
-
-    private String getResponseHeader(HttpResponseBuilder response, String headerName) {
-        try {
-            var field = response.getClass().getDeclaredField("headers");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            Map<String, String> headers = (Map<String, String>) field.get(response);
-
-            if (headers != null) {
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    if (entry.getKey().equalsIgnoreCase(headerName)) {
-                        return entry.getValue();
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-        return null;
-    }
-
-    private Map<String, String> mergeHeaders(HttpResponseBuilder response,
-                                             Map<String, String> newHeaders) {
-        Map<String, String> merged = new HashMap<>();
-
-
-        try {
-            var field = response.getClass().getDeclaredField("headers");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            Map<String, String> existing = (Map<String, String>) field.get(response);
-            if (existing != null) {
-                for (Map.Entry<String, String> entry : existing.entrySet()) {
-                    if (!entry.getKey().equalsIgnoreCase("Content-Length")) {
-                        merged.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-
-        merged.putAll(newHeaders);
-        return merged;
-    }
-    private String getResponseContentType(HttpResponseBuilder response) {
-        try {
-            var field = response.getClass().getDeclaredField("headers");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            Map<String, String> headers = (Map<String, String>) field.get(response);
-
-            if (headers != null) {
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    if (entry.getKey().equalsIgnoreCase("Content-Type")) {
-                        return entry.getValue();
-                    }
-                }
-            }
-        } catch (Exception e) {
-        }
-        return null;
-    }
     private boolean shouldCompress(String contentType) {
         if (contentType == null) {
             return false;
@@ -199,6 +114,7 @@ public class CompressionFilter implements Filter {
         return COMPRESSIBLE_TYPES.contains(baseType) ||
                 baseType.startsWith("text/");
     }
+
     private String getHeader(HttpRequest request, String headerName) {
         Map<String, String> headers = request.getHeaders();
 
@@ -212,6 +128,7 @@ public class CompressionFilter implements Filter {
         }
         return null;
     }
+
     private byte[] gzipCompress(byte[] data) throws IOException {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream(data.length);
 
@@ -220,30 +137,6 @@ public class CompressionFilter implements Filter {
         }
 
         return byteStream.toByteArray();
-    }
-    private byte[] getResponseBody(HttpResponseBuilder response) {
-        try {
-            var field = response.getClass().getDeclaredField("bytebody");
-            field.setAccessible(true);
-            byte[] bytebody = (byte[]) field.get(response);
-
-            if (bytebody != null) {
-                return bytebody;
-            }
-
-            var bodyField = response.getClass().getDeclaredField("body");
-            bodyField.setAccessible(true);
-            String body = (String) bodyField.get(response);
-
-            if (body != null && !body.isEmpty()) {
-                return body.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            }
-
-            return null;
-
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     @Override

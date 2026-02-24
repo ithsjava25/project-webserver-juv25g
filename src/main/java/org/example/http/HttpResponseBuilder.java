@@ -83,6 +83,14 @@ public class HttpResponseBuilder {
     public void setHeader(String name, String value) {
         this.headers.put(name, value);
     }
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public byte[] getBodyBytes() {
+        if (bytebody != null) return bytebody;
+        return body.getBytes(StandardCharsets.UTF_8);
+    }
 
     public void setContentTypeFromFilename(String filename) {
         String mimeType = MimeTypeDetector.detectMimeType(filename);
