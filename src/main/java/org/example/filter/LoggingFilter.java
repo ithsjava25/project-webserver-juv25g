@@ -21,8 +21,8 @@ public class LoggingFilter implements Filter {
         try {
             chain.doFilter(request, response);
         } catch (Exception e) {
-            if(response.getStatusCode() == 200)
-                response.setStatusCode(500);
+            if(response.getStatusCode() == HttpResponseBuilder.SC_OK)
+                response.setStatusCode(HttpResponseBuilder.SC_INTERNAL_SERVER_ERROR);
         } finally {
             long endTime = System.nanoTime();
             long processingTimeInMs = (endTime - startTime) / 1000000;
