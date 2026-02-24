@@ -56,7 +56,8 @@ private List<Filter> buildFilters() {
         HttpResponseBuilder response = applyFilters(request);
 
         int statusCode = response.getStatusCode();
-        if (statusCode == 403 || statusCode == 400) {
+        if (statusCode == HttpResponseBuilder.SC_FORBIDDEN ||
+                statusCode == HttpResponseBuilder.SC_BAD_REQUEST) {
             byte[] responseBytes = response.build();
             client.getOutputStream().write(responseBytes);
             client.getOutputStream().flush();

@@ -44,7 +44,7 @@ public class IpFilter implements Filter {
         String clientIp = normalizeIp((String) request.getAttribute("clientIp"));
 
         if (clientIp == null || clientIp.trim().isEmpty()) {
-            response.setStatusCode(400);
+            response.setStatusCode(HttpResponseBuilder.SC_BAD_REQUEST);
             response.setBody("Bad Request: Missing client IP address");
             return;
         }
@@ -54,7 +54,7 @@ public class IpFilter implements Filter {
         if (allowed) {
             chain.doFilter(request, response);
         } else {
-            response.setStatusCode(403);
+            response.setStatusCode(HttpResponseBuilder.SC_FORBIDDEN);
             response.setBody("Forbidden: IP address " + clientIp + " is not allowed");
         }
     }
