@@ -6,16 +6,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AppConfig(
         @JsonProperty("server") ServerConfig server,
-        @JsonProperty("logging") LoggingConfig logging
+        @JsonProperty("logging") LoggingConfig logging,
+        @JsonProperty("ipFilter") IpFilterConfig ipFilter
 ) {
     public static AppConfig defaults() {
-        return new AppConfig(ServerConfig.defaults(), LoggingConfig.defaults());
+        return new AppConfig(
+                ServerConfig.defaults(),
+                LoggingConfig.defaults(),
+                IpFilterConfig.defaults()
+        );
     }
 
     public AppConfig withDefaultsApplied() {
         ServerConfig serverConfig = (server == null ? ServerConfig.defaults() : server.withDefaultsApplied());
         LoggingConfig loggingConfig = (logging == null ? LoggingConfig.defaults() : logging.withDefaultsApplied());
-        return new AppConfig(serverConfig, loggingConfig);
+        IpFilterConfig ipFilterConfig = (ipFilter == null ? IpFilterConfig.defaults() : ipFilter.withDefaultsApplied());  // ← LÄGG TILL
+        return new AppConfig(serverConfig, loggingConfig, ipFilterConfig);  // ← UPPDATERA DENNA RAD
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -48,6 +54,26 @@ public record AppConfig(
         public LoggingConfig withDefaultsApplied() {
             String lvl = (level == null || level.isBlank()) ? "INFO" : level;
             return new LoggingConfig(lvl);
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record IpFilterConfig(
+            @JsonProperty("enabled") Boolean enabled,
+            @JsonProperty("mode") String mode,
+            @JsonProperty("blockedIps") java.util.List<String> blockedIps,
+            @JsonProperty("allowedIps") java.util.List<String> allowedIps
+    ) {
+        public static IpFilterConfig defaults() {
+            return new IpFilterConfig(false, "BLOCKLIST", java.util.List.of(), java.util.List.of());
+        }
+
+        public IpFilterConfig withDefaultsApplied() {
+            Boolean e = (enabled == null) ? false : enabled;
+            String m = (mode == null || mode.isBlank()) ? "BLOCKLIST" : mode;
+            java.util.List<String> blocked = (blockedIps == null) ? java.util.List.of() : blockedIps;
+            java.util.List<String> allowed = (allowedIps == null) ? java.util.List.of() : allowedIps;
+            return new IpFilterConfig(e, m, blocked, allowed);
         }
     }
 }

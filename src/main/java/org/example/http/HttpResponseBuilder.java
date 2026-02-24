@@ -65,6 +65,10 @@ public class HttpResponseBuilder {
         this.statusCode = statusCode;
     }
 
+    public int getStatusCode() {
+        return this.statusCode;
+    }
+
     public void setBody(String body) {
         this.body = body != null ? body : "";
         this.bytebody = null;
