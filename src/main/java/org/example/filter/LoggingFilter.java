@@ -11,7 +11,7 @@ public class LoggingFilter implements Filter {
 
     @Override
     public void init() {
-
+        //No initialization needed
     }
 
     @Override
@@ -37,6 +37,6 @@ public class LoggingFilter implements Filter {
 
     @Override
     public void destroy() {
-
+        //No initialization needed
     }
 }
