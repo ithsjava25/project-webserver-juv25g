@@ -9,8 +9,8 @@ FROM eclipse-temurin:25-jre-alpine
 EXPOSE 8080
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app/
-COPY --from=build /build/target/classes/ /
-COPY --from=build /build/target/dependency/ /dependencies/
+COPY --from=build /build/target/classes/ /app/
+COPY --from=build /build/target/dependency/ /app/dependencies/
 COPY /www/ /www/
 USER appuser
-ENTRYPOINT ["java", "-classpath", "/app:/dependencies/*", "org.example.App"]
+ENTRYPOINT ["java", "-classpath", "/app:/app/dependencies/*", "org.example.App"]
