@@ -99,8 +99,7 @@ public class HttpResponseBuilder {
     }
 
 
-    public int getStatusCode() {
-        return statusCode;
+
     /*
      * Builds the complete HTTP response as a byte array and preserves binary content without corruption.
      * @return Complete HTTP response (headers + body) as byte[]
