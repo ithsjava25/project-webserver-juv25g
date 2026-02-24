@@ -134,12 +134,4 @@ public class HttpResponseBuilder {
 
         return response;
     }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public char[] getBody() {
-        return body.toCharArray();
-    }
 }
