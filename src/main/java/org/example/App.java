@@ -3,6 +3,7 @@ package org.example;
 import org.example.config.AppConfig;
 import org.example.config.ConfigLoader;
 
+import java.net.Socket;
 import java.nio.file.Path;
 
 public class App {
@@ -16,7 +17,7 @@ public class App {
 
         int port = resolvePort(args, appConfig.server().port());
 
-        new TcpServer(port).start();
+        new TcpServer(port, ConnectionHandler::new).start();
     }
 
     static int resolvePort(String[] args, int configPort) {

@@ -58,14 +58,14 @@ public class TcpServer {
 
     private void handleInternalServerError(Socket client){
         HttpResponseBuilder response = new HttpResponseBuilder();
-        response.setStatusCode(500);
+        response.setStatusCode(HttpResponseBuilder.SC_INTERNAL_SERVER_ERROR);
         response.setHeaders(Map.of("Content-Type", "text/plain; charset=utf-8"));
-        response.setBody("Internal Server Error 500");
+        response.setBody("⚠️ Internal Server Error 500 ⚠️");
 
         if (!client.isClosed()) {
             try {
                 OutputStream out = client.getOutputStream();
-                out.write(response.build().getBytes(StandardCharsets.UTF_8));
+                out.write(response.build());
                 out.flush();
             } catch (IOException e) {
                 System.err.println("Failed to send 500 response: " + e.getMessage());
