@@ -28,6 +28,12 @@ public class CachingFilter implements Filter {
 
         String path = request.getPath();
 
+        if (path.equals("/")) {
+            path = "index.html";
+        } else {
+            path = path.substring(1);
+        }
+
         File file = new File("www", path);
 
         if(!file.exists()){
@@ -38,31 +44,42 @@ public class CachingFilter implements Filter {
         Map<String, String> headers = request.getHeaders();
 
         String modifiedSince = headers.get("If-Modified-Since");
-        String ETag = generateEtag(file);
-        Instant lastModified =
-                Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(modifiedSince));
+        String eTag = generateEtag(file);
+        Instant lastModified = Instant.ofEpochMilli(file.lastModified());
 
         String ifNoneMatch = headers.get("If-None-Match");
 
 
-        if (ifNoneMatch != null && ifNoneMatch.equals(ETag)) {
+        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
             response.setStatusCode(304);
             return;
         }
-        if (!lastModified.isAfter(Instant.parse(modifiedSince))) {
-            response.setStatusCode(304);
-            return;
+
+
+        if (modifiedSince != null) {
+            try {
+                Instant ifModifiedSinceInstant =
+                        Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(modifiedSince));
+
+                if (!lastModified.isAfter(ifModifiedSinceInstant)) {
+                    response.setStatusCode(304);
+                    return;
+                }
+
+            } catch (Exception e) {
+
+            }
         }
 
         chain.doFilter(request, response);
 
         HttpCachingHeaders cachingHeaders = new HttpCachingHeaders();
-        cachingHeaders.addETagHeader(ETag);
+        cachingHeaders.addETagHeader(eTag);
         cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
         cachingHeaders.setDefaultCacheControlStatic();
 
-        //response.setHeaders(cachingHeaders.getHeaders());
-        response.addHeader("ETag", ETag);
+
+        response.addHeader("ETag", eTag);
 
     }
 
