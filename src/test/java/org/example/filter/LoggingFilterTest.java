@@ -86,7 +86,6 @@ class LoggingFilterTest {
         String message = logCaptor.getValue().getMessage();
 
         assertThat(message).contains(expectedMessage);
-
     }
 
 }
