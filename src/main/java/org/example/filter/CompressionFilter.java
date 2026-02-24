@@ -97,6 +97,7 @@ public class CompressionFilter implements Filter {
             }
 
         } catch (IOException e) {
+            System.err.println("CompressionFilter: gzip compression failed: " + e.getMessage());
         }
     }
 
