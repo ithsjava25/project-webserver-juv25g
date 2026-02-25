@@ -2,6 +2,7 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.example.http.HttpResponseBuilder.*;
@@ -60,5 +61,20 @@ class RequestTimeOutFilterTest {
 
         assertThat(new String(response.build()))
                 .contains("Gateway Timeout");
+    }
+
+    // Exception Path --> Oväntat undantag kastar en exception
+    @Test
+    void requestTimeOutFilter_shouldHandleGenericException() {
+        FilterChain errorChain = (request, response) -> {
+            throw new RuntimeException("Unexpected error");
+        };
+
+        assertThatThrownBy(() -> filter.doFilter(request, response, errorChain))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Filter execution error");
+
+        assertThat(response.getStatusCode()).isEqualTo((SC_INTERNAL_SERVER_ERROR));
+
     }
 }
