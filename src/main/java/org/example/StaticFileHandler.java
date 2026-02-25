@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 
@@ -127,8 +126,8 @@ public class StaticFileHandler {
 
         if (fileBytes != null) {
             outputStream.write(fileBytes);
+            outputStream.flush();
         }
-        outputStream.flush();
     }
 
     private void sendLargeFile(OutputStream outputStream, File file) throws IOException {
@@ -138,8 +137,10 @@ public class StaticFileHandler {
 
             while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
+                if (bytesRead == BUFFER_SIZE){
+                    outputStream.flush();
+                }
             }
-
             outputStream.flush();
         }
     }
