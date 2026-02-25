@@ -6,8 +6,35 @@ import java.util.TreeMap;
 
 public class HttpResponseBuilder {
 
+    // SUCCESS
+    public static final int SC_OK = 200;
+    public static final int SC_CREATED = 201;
+    public static final int SC_NO_CONTENT = 204;
+
+    // REDIRECTION
+    public static final int SC_MOVED_PERMANENTLY = 301;
+    public static final int SC_FOUND = 302;
+    public static final int SC_SEE_OTHER = 303;
+    public static final int SC_NOT_MODIFIED = 304;
+    public static final int SC_TEMPORARY_REDIRECT = 307;
+    public static final int SC_PERMANENT_REDIRECT = 308;
+
+    // CLIENT ERROR
+    public static final int SC_BAD_REQUEST = 400;
+    public static final int SC_UNAUTHORIZED = 401;
+    public static final int SC_FORBIDDEN = 403;
+    public static final int SC_NOT_FOUND = 404;
+
+    // SERVER ERROR
+    public static final int SC_INTERNAL_SERVER_ERROR = 500;
+    public static final int SC_BAD_GATEWAY = 502;
+    public static final int SC_SERVICE_UNAVAILABLE = 503;
+    public static final int SC_GATEWAY_TIMEOUT = 504;
+
+
+
     private static final String PROTOCOL = "HTTP/1.1";
-    private int statusCode = 200;
+    private int statusCode = SC_OK;
     private String body = "";
     private byte[] bytebody;
     private Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -15,26 +42,31 @@ public class HttpResponseBuilder {
     private static final String CRLF = "\r\n";
 
     private static final Map<Integer, String> REASON_PHRASES = Map.ofEntries(
-            Map.entry(200, "OK"),
-            Map.entry(201, "Created"),
-            Map.entry(204, "No Content"),
-            Map.entry(301, "Moved Permanently"),
-            Map.entry(302, "Found"),
-            Map.entry(303, "See Other"),
-            Map.entry(304, "Not Modified"),
-            Map.entry(307, "Temporary Redirect"),
-            Map.entry(308, "Permanent Redirect"),
-            Map.entry(400, "Bad Request"),
-            Map.entry(401, "Unauthorized"),
-            Map.entry(403, "Forbidden"),
-            Map.entry(404, "Not Found"),
-            Map.entry(500, "Internal Server Error"),
-            Map.entry(502, "Bad Gateway"),
-            Map.entry(503, "Service Unavailable")
+            Map.entry(SC_OK, "OK"),
+            Map.entry(SC_CREATED, "Created"),
+            Map.entry(SC_NO_CONTENT, "No Content"),
+            Map.entry(SC_MOVED_PERMANENTLY, "Moved Permanently"),
+            Map.entry(SC_FOUND, "Found"),
+            Map.entry(SC_SEE_OTHER, "See Other"),
+            Map.entry(SC_NOT_MODIFIED, "Not Modified"),
+            Map.entry(SC_TEMPORARY_REDIRECT, "Temporary Redirect"),
+            Map.entry(SC_PERMANENT_REDIRECT, "Permanent Redirect"),
+            Map.entry(SC_BAD_REQUEST, "Bad Request"),
+            Map.entry(SC_UNAUTHORIZED, "Unauthorized"),
+            Map.entry(SC_FORBIDDEN, "Forbidden"),
+            Map.entry(SC_NOT_FOUND, "Not Found"),
+            Map.entry(SC_INTERNAL_SERVER_ERROR, "Internal Server Error"),
+            Map.entry(SC_BAD_GATEWAY, "Bad Gateway"),
+            Map.entry(SC_SERVICE_UNAVAILABLE, "Service Unavailable"),
+            Map.entry(SC_GATEWAY_TIMEOUT, "Gateway Timeout")
     );
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+        return this.statusCode;
     }
 
     public void setBody(String body) {

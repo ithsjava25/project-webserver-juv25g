@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.http.HttpResponseBuilder;
+import static org.example.http.HttpResponseBuilder.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,14 +37,14 @@ public class StaticFileHandler {
         File file = new File(root, uri).getCanonicalFile();
         if (!file.toPath().startsWith(root.toPath())) {
             fileBytes = "403 Forbidden".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            statusCode = 403;
+            statusCode = SC_FORBIDDEN;
             return;
         }
 
         // Read file
         if (file.isFile()) {
             fileBytes = Files.readAllBytes(file.toPath());
-            statusCode = 200;
+            statusCode = SC_OK;
         } else {
             File errorFile = new File(WEB_ROOT, "pageNotFound.html");
             if (errorFile.isFile()) {
@@ -51,7 +52,7 @@ public class StaticFileHandler {
             } else {
                 fileBytes = "404 Not Found".getBytes(java.nio.charset.StandardCharsets.UTF_8);
             }
-            statusCode = 404;
+            statusCode = SC_NOT_FOUND;
         }
     }
 

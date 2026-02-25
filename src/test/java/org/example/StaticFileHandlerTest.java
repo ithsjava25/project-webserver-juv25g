@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.example.http.HttpResponseBuilder.*;
 
 /**
  * Unit test class for verifying the behavior of the StaticFileHandler class.
@@ -48,7 +49,7 @@ class StaticFileHandlerTest {
         //Assert
         String response = fakeOutput.toString();//Converts the captured byte stream into a String for verification
 
-        assertTrue(response.contains("HTTP/1.1 200 OK")); // Assert the status
+        assertTrue(response.contains("HTTP/1.1 " + SC_OK +  " OK")); // Assert the status
         assertTrue(response.contains("Hello Test")); //Assert the content in the file
 
         assertTrue(response.contains("Content-Type: text/html; charset=UTF-8")); // Verify the correct Content-type header
@@ -74,7 +75,7 @@ class StaticFileHandlerTest {
         //Assert
         String response = fakeOutput.toString();//Converts the captured byte stream into a String for verification
 
-        assertTrue(response.contains("HTTP/1.1 404 Not Found")); // Assert the status
+        assertTrue(response.contains("HTTP/1.1 " + SC_NOT_FOUND + " Not Found")); // Assert the status
 
     }
 
@@ -94,7 +95,7 @@ class StaticFileHandlerTest {
         // Assert
         String response = fakeOutput.toString();
         assertFalse(response.contains("TOP SECRET"));
-        assertTrue(response.contains("HTTP/1.1 403 Forbidden"));
+        assertTrue(response.contains("HTTP/1.1 " + SC_FORBIDDEN + " Forbidden"));
     }
 
     @ParameterizedTest
@@ -115,7 +116,7 @@ class StaticFileHandlerTest {
         handler.sendGetRequest(out, uri);
 
         // Assert
-        assertTrue(out.toString().contains("HTTP/1.1 200 OK"));
+        assertTrue(out.toString().contains("HTTP/1.1 " + SC_OK + " OK"));
     }
 
     @Test
@@ -131,7 +132,7 @@ class StaticFileHandlerTest {
 
         // Assert
         String response = out.toString();
-        assertFalse(response.contains("HTTP/1.1 200 OK"));
-        assertTrue(response.contains("HTTP/1.1 404 Not Found"));
+        assertFalse(response.contains("HTTP/1.1 " + SC_OK + " OK"));
+        assertTrue(response.contains("HTTP/1.1 " + SC_NOT_FOUND +  " Not Found"));
     }
 }
