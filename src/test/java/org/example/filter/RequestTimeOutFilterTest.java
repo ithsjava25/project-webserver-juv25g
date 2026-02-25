@@ -35,11 +35,7 @@ class RequestTimeOutFilterTest {
 
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(SC_OK);
-
-
-
     }
-
 
     // Timeout Path --> Anropet tar för lång tid och kastar RunTimeException
     @Test
@@ -52,6 +48,7 @@ class RequestTimeOutFilterTest {
                 Thread.currentThread().interrupt();
             }
         };
+
         // Act & Assert
         assertThatThrownBy(() -> filter.doFilter(request, response, slowChain))
                 .isInstanceOf(RuntimeException.class)

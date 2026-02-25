@@ -25,7 +25,6 @@ public class RequestTimeOutFilter implements Filter {
     @Override
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
 
-
         Future<?> future = executor.submit(() -> {
             chain.doFilter(request, response);
         });
@@ -38,11 +37,9 @@ public class RequestTimeOutFilter implements Filter {
 
             logger.warning("TIMEOUT PROAKTIV: " + request.getPath() + " avbröts efter " + timeoutMS + "ms");
 
-
             response.setStatusCode(SC_GATEWAY_TIMEOUT);
             response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
             response.setBody("<h1>504 Gateway Timeout</h1><p>Processen avbröts eftersom den tog för lång tid.</p>");
-
 
             throw new RuntimeException("Timeout reached in filter");
 
