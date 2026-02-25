@@ -24,6 +24,7 @@ public class HttpResponseBuilder {
     public static final int SC_UNAUTHORIZED = 401;
     public static final int SC_FORBIDDEN = 403;
     public static final int SC_NOT_FOUND = 404;
+    public static final int SC_PAYLOAD_TOO_LARGE = 413;
 
     // SERVER ERROR
     public static final int SC_INTERNAL_SERVER_ERROR = 500;
@@ -58,7 +59,8 @@ public class HttpResponseBuilder {
             Map.entry(SC_INTERNAL_SERVER_ERROR, "Internal Server Error"),
             Map.entry(SC_BAD_GATEWAY, "Bad Gateway"),
             Map.entry(SC_SERVICE_UNAVAILABLE, "Service Unavailable"),
-            Map.entry(SC_GATEWAY_TIMEOUT, "Gateway Timeout")
+            Map.entry(SC_GATEWAY_TIMEOUT, "Gateway Timeout"),
+            Map.entry(SC_PAYLOAD_TOO_LARGE, "Payload Too Large")
     );
 
     public void setStatusCode(int statusCode) {
