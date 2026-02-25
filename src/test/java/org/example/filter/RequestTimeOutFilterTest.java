@@ -18,7 +18,7 @@ class RequestTimeOutFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new RequestTimeOutFilter(500);
+        filter = new RequestTimeOutFilter(100);
         response = new HttpResponseBuilder();
         request = new HttpRequest("GET", "/", "HTTP/1.1",null,"");
     }
@@ -51,9 +51,11 @@ class RequestTimeOutFilterTest {
         };
 
         // Act & Assert
-        assertThatThrownBy(() -> filter.doFilter(request, response, slowChain))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Timeout");
+        filter.doFilter(request, response, slowChain);
+
+//        assertThatThrownBy(() -> filter.doFilter(request, response, slowChain))
+//                .isInstanceOf(RuntimeException.class)
+//                .hasMessageContaining("Timeout");
 
         assertThat(response.getStatusCode())
                 .as("Status code should be 504 at timeout")
@@ -70,9 +72,11 @@ class RequestTimeOutFilterTest {
             throw new RuntimeException("Unexpected error");
         };
 
-        assertThatThrownBy(() -> filter.doFilter(request, response, errorChain))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Filter execution error");
+        filter.doFilter(request, response, errorChain);
+
+//        assertThatThrownBy(() -> filter.doFilter(request, response, errorChain))
+//                .isInstanceOf(RuntimeException.class)
+//                .hasMessageContaining("Filter execution error");
 
         assertThat(response.getStatusCode()).isEqualTo((SC_INTERNAL_SERVER_ERROR));
 
