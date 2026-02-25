@@ -25,7 +25,7 @@ public final class RedirectRule {
     public int getStatusCode() { return statusCode; }
 
     public boolean matches(String requestPath) {
-        return sourcePattern.matcher(requestPath).matches();
+        return requestPath != null && sourcePattern.matcher(requestPath).matches();
     }
 
     @Override
