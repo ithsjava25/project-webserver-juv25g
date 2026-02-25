@@ -14,8 +14,9 @@ public final class RedirectRule {
         if (this.targetUrl.isBlank()) {
             throw new IllegalArgumentException("targetUrl must not be blank");
         }
-        if (this.targetUrl.indexOf('\r') >= 0 || this.targetUrl.indexOf('\n') >= 0) {
-            throw new IllegalArgumentException("targetUrl must not contain CR/LF");
+        if (this.targetUrl.indexOf('\r') >= 0 || this.targetUrl.indexOf('\n') >= 0
+                || this.targetUrl.indexOf('\0') >= 0) {
+            throw new IllegalArgumentException("targetUrl must not contain CR/LF or null byte");
         }
 
         if (statusCode != 301 && statusCode != 302) {
