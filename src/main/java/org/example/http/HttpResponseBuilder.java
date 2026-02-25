@@ -138,4 +138,15 @@ public class HttpResponseBuilder {
 
         return response;
     }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public String getBody(){
+        return body;
+    }
+    public byte[] getByteBody() {
+        return bytebody;
+    }
 }
