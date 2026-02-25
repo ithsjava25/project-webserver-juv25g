@@ -8,11 +8,17 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
+/**
+ * A proactive filter that monitors the execution time of the request processing chain.
+ * If the execution exceeds the specified timeout, the filter interrupts the
+ * processing thread and returns an HTTP 504 Gateway Timeout response.
+ */
 public class RequestTimeOutFilter implements Filter {
 
     private final int timeoutMS;
     private static final Logger logger = Logger.getLogger(RequestTimeOutFilter.class.getName());
 
+    /** Thread pool used to execute the filter chain asynchronously for timeout monitoring. */
     private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     public RequestTimeOutFilter(int timeoutMS) {
@@ -39,7 +45,7 @@ public class RequestTimeOutFilter implements Filter {
 
             response.setStatusCode(SC_GATEWAY_TIMEOUT);
             response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
-            response.setBody("<h1>504 Gateway Timeout</h1><p>Processen avbröts eftersom den tog för lång tid.</p>");
+            response.setBody("<h1>504 Gateway Timeout</h1><p>The server took to long to respond.</p>");
 
             throw new RuntimeException("Timeout reached in filter");
 
