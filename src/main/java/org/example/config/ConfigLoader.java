@@ -2,7 +2,6 @@ package org.example.config;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.dataformat.yaml.YAMLFactory;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.InputStream;
@@ -28,6 +27,8 @@ public final class ConfigLoader {
     }
 
     public static AppConfig loadOnceWithClasspathFallback(Path externalPath, String classpathResourceName) {
+        Objects.requireNonNull(externalPath, "externalPath");
+        Objects.requireNonNull(classpathResourceName, "classpathResourceName");
         if (cached != null) return cached;
 
         synchronized (ConfigLoader.class) {
