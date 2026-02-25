@@ -4,3 +4,9 @@ server:
 
 logging:
   level: INFO
+
+ipFilter:
+  enabled: false
+  mode: "BLOCKLIST"
+  blockedIps: [ ]
+  allowedIps: [ ]
