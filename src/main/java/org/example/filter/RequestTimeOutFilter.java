@@ -20,7 +20,7 @@ public class RequestTimeOutFilter implements Filter {
 
     /** Thread pool used to execute the filter chain asynchronously for timeout monitoring. */
 
-   private final ExecutorService executor = new ThreadPoolExecutor(
+   private static final ExecutorService executor = new ThreadPoolExecutor(
            Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
             Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
             60L, TimeUnit.SECONDS,
@@ -78,6 +78,7 @@ public class RequestTimeOutFilter implements Filter {
                 return;
 
 
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             handleInternalError(response, e);
@@ -108,14 +109,14 @@ public class RequestTimeOutFilter implements Filter {
 
     @Override
     public void destroy() {
-        executor.shutdown();
-        try {
-            if(!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
+//        executor.shutdown();
+//        try {
+//            if(!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+//                executor.shutdownNow();
+//            }
+//        } catch (InterruptedException e) {
+//            executor.shutdownNow();
+//            Thread.currentThread().interrupt();
+//        }
     }
 }
