@@ -19,8 +19,8 @@ public final class RedirectRule {
             throw new IllegalArgumentException("targetUrl must not contain CR/LF or null byte");
         }
 
-        if (statusCode != 301 && statusCode != 302) {
-            throw new IllegalArgumentException("statusCode must be 301 or 302");
+        if (statusCode != 301 && statusCode != 302 && statusCode != 307 && statusCode != 308) {
+            throw new IllegalArgumentException("statusCode must be 301, 302, 307, or 308");
         }
         this.statusCode = statusCode;
     }
