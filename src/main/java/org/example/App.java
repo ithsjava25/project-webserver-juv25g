@@ -16,9 +16,6 @@ public class App {
                 "application.yml"
         );
 
-        int port = appConfig.server().port();
-        AppConfig appConfig = ConfigLoader.loadOnce(configPath);
-
         int port = resolvePort(args, appConfig.server().port());
 
         new TcpServer(port).start();
