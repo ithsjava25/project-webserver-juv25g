@@ -19,7 +19,14 @@ public class RequestTimeOutFilter implements Filter {
     private static final Logger logger = Logger.getLogger(RequestTimeOutFilter.class.getName());
 
     /** Thread pool used to execute the filter chain asynchronously for timeout monitoring. */
-    private final ExecutorService executor = Executors.newFixedThreadPool(200);
+
+   private final ExecutorService executor = new ThreadPoolExecutor(
+           Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
+            Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
+            60L, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(1024),
+            new ThreadPoolExecutor.AbortPolicy()
+    );
 
     public RequestTimeOutFilter(int timeoutMS) {
 
@@ -37,44 +44,51 @@ public class RequestTimeOutFilter implements Filter {
 
         HttpResponseBuilder shadowResponse = new HttpResponseBuilder();
 
-        Future<?> future = executor.submit(() -> {
-            try {
-                chain.doFilter(request, shadowResponse);
-            } catch (Exception e) {
-               throw new RuntimeException(e);
-            }
-        });
+
+        Future<?> future;
+             try {
+                 future = executor.submit(() -> {
+                     try {
+                         chain.doFilter(request, shadowResponse);
+                     } catch (Exception e) {
+                         throw new RuntimeException(e);
+                     }
+                 });
+
+             } catch (RejectedExecutionException e) {
+                 logger.severe("SERVER OVERLOADED: Queue is full for path " + request.getPath());
+                 response.setStatusCode(SC_SERVICE_UNAVAILABLE);
+                 response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
+                 response.setBody("<h1>503 Service Unavailable</h1><p>Server is too busy to handle the request.</p>");
+                 return;
+             }
 
         try {
             future.get(timeoutMS, TimeUnit.MILLISECONDS);
-
             transferResponseData(shadowResponse, response);
 
         } catch (TimeoutException e) {
             future.cancel(true);
-
             logger.warning("TIMEOUT ERROR: " + request.getPath() + " was interrupted after " + timeoutMS + "ms");
 
                 response.setStatusCode(SC_GATEWAY_TIMEOUT);
                 response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
-                response.setBody("<h1>504 Gateway Timeout</h1><p>The server took to long to respond.</p>");
+                response.setBody("<h1>504 Gateway Timeout</h1><p>The server took too long to respond.</p>");
 
-            throw new RuntimeException("Timeout reached in filter");
+                return;
+
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.severe("Error during execution: " + e.getMessage());
-            response.setStatusCode(SC_INTERNAL_SERVER_ERROR);
-            throw new RuntimeException("Filter execution error", e);
+            handleInternalError(response, e);
+            return;
 
         }  catch (ExecutionException e) {
-            logger.severe("Error during execution: " + e.getMessage());
-            response.setStatusCode(SC_INTERNAL_SERVER_ERROR);
-            throw new RuntimeException("Filter execution error", e);
+            handleInternalError(response, e);
+            return;
         }
     }
     private void transferResponseData(HttpResponseBuilder source, HttpResponseBuilder target) {
-
         target.setStatusCode(source.getStatusCode());
         target.setHeaders(source.getHeaders());
 
@@ -83,6 +97,13 @@ public class RequestTimeOutFilter implements Filter {
         } else {
             target.setBody(source.getBody());
         }
+    }
+
+    private void handleInternalError(HttpResponseBuilder response, Exception e) {
+        logger.severe("Error during execution: " + e.getMessage());
+        response.setStatusCode(SC_INTERNAL_SERVER_ERROR);
+        response.setHeaders(Map.of("Content-Type", "text/html; charset=utf-8"));
+        response.setBody("<h1>500 Internal Server Error</h1>");
     }
 
     @Override
