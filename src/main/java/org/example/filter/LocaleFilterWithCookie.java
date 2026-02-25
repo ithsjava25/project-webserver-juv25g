@@ -80,7 +80,12 @@ public class LocaleFilterWithCookie implements Filter {
             return null;
         }
 
-        String cookieHeader = headers.get("Cookie");
+        String cookieHeader = headers.entrySet().stream()
+                .filter(e -> e.getKey() != null && e.getKey().equalsIgnoreCase("Cookie"))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
+
         if (cookieHeader == null || cookieHeader.isBlank()) {
             return null;
         }
@@ -112,7 +117,12 @@ public class LocaleFilterWithCookie implements Filter {
             return null;
         }
 
-        String acceptLanguage = headers.get("Accept-Language");
+        String acceptLanguage = headers.entrySet().stream()
+                .filter(e -> e.getKey() != null && e.getKey().equalsIgnoreCase("Accept-Language"))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
+
         if (acceptLanguage == null || acceptLanguage.isBlank()) {
             return null;
         }
@@ -123,10 +133,6 @@ public class LocaleFilterWithCookie implements Filter {
         }
 
         String locale = parts[0].split(";")[0].trim();
-        if (locale.isEmpty()) {
-            return null;
-        } else {
-            return locale;
-        }
+        return locale.isEmpty() ? null : locale;
     }
 }
