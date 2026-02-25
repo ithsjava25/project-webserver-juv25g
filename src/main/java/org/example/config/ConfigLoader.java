@@ -97,12 +97,12 @@ public final class ConfigLoader {
         String name = fileName.toLowerCase();
 
         if (name.endsWith(".yml") || name.endsWith(".yaml")) {
-            return YAMLMapper.builder(new YAMLFactory()).build();
+            return YAMLMapper.builder().build();
 
         } else if (name.endsWith(".json")) {
             return JsonMapper.builder().build();
         } else  {
-            return YAMLMapper.builder(new YAMLFactory()).build();
+            return YAMLMapper.builder().build();
         }
 
     }
