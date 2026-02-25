@@ -93,6 +93,31 @@ public class HttpResponseBuilder {
         setHeader("Content-Type", mimeType);
     }
 
+    public byte[] buildHeaders() {
+        StringBuilder headerBuilder = new StringBuilder();
+
+        String reason = REASON_PHRASES.getOrDefault(statusCode, "");
+        headerBuilder.append(PROTOCOL).append(" ").append(statusCode);
+        if (!reason.isEmpty()) {
+            headerBuilder.append(" ").append(reason);
+        }
+        headerBuilder.append(CRLF);
+
+        headers.forEach((k, v) -> headerBuilder.append(k).append(": ").append(v).append(CRLF));
+
+        if (!headers.containsKey("Content-Length")) {
+            headerBuilder.append("Content-Length: ").append(0).append(CRLF);
+        }
+
+        if (!headers.containsKey("Connection")) {
+            headerBuilder.append("Connection: close").append(CRLF);
+        }
+
+        headerBuilder.append(CRLF);
+
+        return headerBuilder.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
     /*
      * Builds the complete HTTP response as a byte array and preserves binary content without corruption.
      * @return Complete HTTP response (headers + body) as byte[]

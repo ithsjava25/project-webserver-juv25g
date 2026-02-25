@@ -5,12 +5,12 @@ import static org.example.http.HttpResponseBuilder.*;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Objects;
 
 public class StaticFileHandler {
     private static final long FILE_SIZE_THRESHOLD = 1024 * 1024; // 1MB
     private static final int BUFFER_SIZE = 8192; // 8KB
-    
+
     private final String WEB_ROOT;
 
     public StaticFileHandler() {
@@ -22,15 +22,24 @@ public class StaticFileHandler {
     }
 
     public void sendGetRequest(OutputStream outputStream, String uri) throws IOException {
-        // Sanitize URI
+        Objects.requireNonNull(outputStream, "outputStream kan inte vara null");
+        Objects.requireNonNull(uri, "uri kan inte vara null");
+
+        // Null-byte detection BEFORE sanitizing
+        if (uri.contains("\0")) {
+            sendErrorResponse(outputStream, SC_FORBIDDEN, "403 Forbidden");
+            return;
+        }
+
+        // Sanitize URI (now safe - no null-bytes to remove)
         uri = sanitizeUri(uri);
 
         // Path traversal check
         File root = new File(WEB_ROOT).getCanonicalFile();
         File file = new File(root, uri).getCanonicalFile();
-        
+
         if (!file.toPath().startsWith(root.toPath())) {
-            sendErrorResponse(outputStream, SC_FORBIDDEN, "403 Forbidden", uri);
+            sendErrorResponse(outputStream, SC_FORBIDDEN, "403 Forbidden");
             return;
         }
 
@@ -38,59 +47,61 @@ public class StaticFileHandler {
         if (file.isFile()) {
             sendFile(outputStream, file, uri);
         } else {
-            File errorFile = new File(WEB_ROOT, "pageNotFound.html");
-            if (errorFile.isFile()) {
-                sendErrorFile(outputStream, errorFile);
-            } else {
-                sendErrorResponse(outputStream, SC_NOT_FOUND, "404 Not Found", uri);
-            }
+            // Return 404, NOT the error file with 200 OK
+            sendErrorResponse(outputStream, SC_NOT_FOUND, "404 Not Found");
         }
     }
 
     private String sanitizeUri(String uri) {
-        // Remove query string and fragment
         int q = uri.indexOf('?');
         if (q >= 0) uri = uri.substring(0, q);
         int h = uri.indexOf('#');
         if (h >= 0) uri = uri.substring(0, h);
-        
-        // Remove null bytes and leading slashes
-        uri = uri.replace("\0", "").replaceAll("^/+", "");
-        
+
+        uri = uri.replaceAll("^/+", "");  // Removed .replace("\0", "") since we check earlier
         return uri;
     }
 
     private void sendFile(OutputStream out, File file, String uri) throws IOException {
         long fileSize = file.length();
-        
-        // Send headers
-        HttpResponseBuilder response = new HttpResponseBuilder();
-        response.setStatusCode(SC_OK);
-        response.setContentTypeFromFilename(uri);
-        response.setContentLength(fileSize);
-        
-        byte[] headers = response.buildHeaders();
-        out.write(headers);
-        
-        // Send body: stream large files, cache small files
+
+        // For small files, use cached approach
         if (fileSize < FILE_SIZE_THRESHOLD) {
-            streamSmallFile(out, file);
+            sendFileWithCache(out, file, uri);
         } else {
-            streamLargeFile(out, file);
+            // For large files, stream with headers
+            sendFileStreamed(out, file, uri, fileSize);
         }
     }
 
-    private void streamSmallFile(OutputStream out, File file) throws IOException {
+    private void sendFileWithCache(OutputStream out, File file, String uri) throws IOException {
         byte[] fileBytes = Files.readAllBytes(file.toPath());
-        out.write(fileBytes);
+
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setStatusCode(SC_OK);
+        response.setContentTypeFromFilename(uri);
+        response.setBody(fileBytes);
+
+        out.write(response.build());
         out.flush();
     }
 
-    private void streamLargeFile(OutputStream out, File file) throws IOException {
+    private void sendFileStreamed(OutputStream out, File file, String uri, long fileSize) throws IOException {
+        // Send headers first
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setStatusCode(SC_OK);
+        response.setContentTypeFromFilename(uri);
+        response.setHeader("Content-Length", String.valueOf(fileSize));
+        response.setHeader("Connection", "close");
+
+        byte[] headers = response.buildHeaders();
+        out.write(headers);
+
+        // Stream body
         try (InputStream in = Files.newInputStream(file.toPath())) {
             byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead;
-            
+
             while ((bytesRead = in.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
             }
@@ -98,24 +109,12 @@ public class StaticFileHandler {
         }
     }
 
-    private void sendErrorFile(OutputStream out, File errorFile) throws IOException {
-        byte[] errorBytes = Files.readAllBytes(errorFile.toPath());
-        
-        HttpResponseBuilder response = new HttpResponseBuilder();
-        response.setStatusCode(SC_NOT_FOUND);
-        response.setContentTypeFromFilename("error.html");
-        response.setBody(errorBytes);
-        
-        out.write(response.build());
-        out.flush();
-    }
-
-    private void sendErrorResponse(OutputStream out, int statusCode, String message, String uri) throws IOException {
+    private void sendErrorResponse(OutputStream out, int statusCode, String message) throws IOException {
         HttpResponseBuilder response = new HttpResponseBuilder();
         response.setStatusCode(statusCode);
-        response.setContentTypeFromFilename(uri);
+        response.setContentTypeFromFilename("error.html");
         response.setBody(message.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        
+
         out.write(response.build());
         out.flush();
     }

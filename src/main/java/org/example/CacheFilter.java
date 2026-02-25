@@ -10,9 +10,12 @@ public class CacheFilter {
         Objects.requireNonNull(uri, "URI kan inte vara null");
         Objects.requireNonNull(provider, "Provider kan inte vara null");
 
-        if (cache.contains(uri)) {
+        // Atomic operation: get() returnerar null om entry inte finns
+        byte[] cached = cache.get(uri);
+        
+        if (cached != null) {
             logCacheHit(uri);
-            return cache.get(uri);
+            return cached;
         }
 
         logCacheMiss(uri);

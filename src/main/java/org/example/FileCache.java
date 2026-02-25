@@ -20,26 +20,31 @@ public class FileCache {
     private long currentSize = 0;
 
     public FileCache() {
-        // LinkedHashMap för att kunna implementera LRU
-        this.cache = new LinkedHashMap<String, CacheEntry>(16, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<String, CacheEntry> eldest) {
-                return cache.size() > MAX_ENTRIES || currentSize > MAX_CACHE_SIZE;
-            }
-        };
+        // LinkedHashMap med access-order LRU
+        // accessOrder=true betyder: get() och put() uppdaterar ordningen
+        this.cache = new LinkedHashMap<String, CacheEntry>(16, 0.75f, true);
     }
 
-    public boolean contains(String key) {
+    /**
+     * Hämta data från cache OCH uppdatera LRU-ordningen.
+     * MÅSTE ha write-lock eftersom get() modifierar LinkedHashMap's internal state.
+     */
+    public byte[] get(String key) {
         Objects.requireNonNull(key, "Key kan inte vara null");
-        lock.readLock().lock();
+        lock.writeLock().lock();  // ← WRITE-LOCK, inte read-lock!
         try {
-            return cache.containsKey(key);
+            CacheEntry entry = cache.get(key);
+            return entry != null ? entry.data : null;
         } finally {
-            lock.readLock().unlock();
+            lock.writeLock().unlock();
         }
     }
 
-    public byte[] get(String key) {
+    /**
+     * Hämta data utan att uppdatera LRU-ordningen (för diagnostik).
+     * Kan använda read-lock eftersom vi inte modifierar LinkedHashMap's state.
+     */
+    public byte[] peek(String key) {
         Objects.requireNonNull(key, "Key kan inte vara null");
         lock.readLock().lock();
         try {
@@ -56,10 +61,24 @@ public class FileCache {
 
         lock.writeLock().lock();
         try {
+            // Guard mot filer större än cache
+            if (value.length > MAX_CACHE_SIZE) {
+                System.out.println("⚠️ Skipping oversized entry: " + key + 
+                    " (" + (value.length / 1024 / 1024) + "MB > " + 
+                    (MAX_CACHE_SIZE / 1024 / 1024) + "MB)");
+                return;
+            }
+
             // Ta bort gamla posten om den finns för att uppdatera storlek
             CacheEntry oldEntry = cache.remove(key);
             if (oldEntry != null) {
                 currentSize -= oldEntry.data.length;
+            }
+
+            // Evicta medan nödvändigt INNAN vi lägger till ny post
+            while ((currentSize + value.length > MAX_CACHE_SIZE || 
+                    cache.size() >= MAX_ENTRIES) && !cache.isEmpty()) {
+                evictLeastRecentlyUsedUnsafe();
             }
 
             // Lägg till ny post
@@ -68,6 +87,24 @@ public class FileCache {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    /**
+     * Evicta minst nyligen använd entry (MÅSTE VARA UNDER WRITE LOCK)
+     */
+    private void evictLeastRecentlyUsedUnsafe() {
+        // LinkedHashMap är sorterad efter access order (LRU)
+        // Första entry är den minst nyligen använda
+        Map.Entry<String, CacheEntry> eldest = cache.entrySet().iterator().next();
+        
+        String key = eldest.getKey();
+        CacheEntry entry = eldest.getValue();
+        
+        cache.remove(key);
+        currentSize -= entry.data.length;
+        
+        System.out.println("✗ Evicted from cache: " + key + 
+            " (" + (entry.data.length / 1024) + "KB)");
     }
 
     public void clear() {
@@ -93,6 +130,15 @@ public class FileCache {
         lock.readLock().lock();
         try {
             return currentSize;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public boolean contains(String key) {
+        lock.readLock().lock();
+        try {
+            return cache.containsKey(key);
         } finally {
             lock.readLock().unlock();
         }
