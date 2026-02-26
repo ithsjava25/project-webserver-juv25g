@@ -15,15 +15,20 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class CompressionFilterTest {
+
+    private static boolean BROTLI_AVAILABLE = false;
 
     @BeforeAll
     static void setupBrotli() {
         try {
             Brotli4jLoader.ensureAvailability();
+            BROTLI_AVAILABLE = true;
         } catch (Exception e) {
             System.err.println("Brotli not available for tests: " + e.getMessage());
+            BROTLI_AVAILABLE = false;
         }
     }
 
@@ -123,24 +128,9 @@ class CompressionFilterTest {
     }
 
     private byte[] getBodyFromResponse(HttpResponseBuilder response) {
-        try {
-            var field = response.getClass().getDeclaredField("bytebody");
-            field.setAccessible(true);
-            byte[] bytebody = (byte[]) field.get(response);
-
-            if (bytebody != null) {
-                return bytebody;
-            }
-
-            var bodyField = response.getClass().getDeclaredField("body");
-            bodyField.setAccessible(true);
-            String body = (String) bodyField.get(response);
-            return body.getBytes(StandardCharsets.UTF_8);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get body", e);
-        }
+        return response.getBodyBytes();
     }
+
     @Test
     void testSkipCompressionForImages() {
         Map<String, String> headers = new HashMap<>();
@@ -206,8 +196,11 @@ class CompressionFilterTest {
         assertTrue(resultBody.length < body.getBytes(StandardCharsets.UTF_8).length,
                 "Should compress even when Content-Type has charset");
     }
+
     @Test
     void testBrotliCompression() throws Exception {
+        assumeTrue(BROTLI_AVAILABLE, "Brotli native library unavailable");
+
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "br");
 
@@ -231,8 +224,11 @@ class CompressionFilterTest {
         String decompressed = decompressBrotli(compressedBody);
         assertEquals(largeBody, decompressed);
     }
+
     @Test
     void testBrotliPreferredOverGzip() {
+        assumeTrue(BROTLI_AVAILABLE, "Brotli native library unavailable");
+
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip, br");
 
@@ -250,6 +246,7 @@ class CompressionFilterTest {
 
         assertEquals("br", response.getHeader("Content-Encoding"));
     }
+
     @Test
     void testGzipWhenOnlyGzipAccepted() {
         Map<String, String> headers = new HashMap<>();
@@ -269,8 +266,11 @@ class CompressionFilterTest {
 
         assertEquals("gzip", response.getHeader("Content-Encoding"));
     }
+
     @Test
     void testBrotliCompressionBetterThanGzip() {
+        assumeTrue(BROTLI_AVAILABLE, "Brotli native library unavailable");
+
         Map<String, String> headers = new HashMap<>();
         String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
 
@@ -298,6 +298,7 @@ class CompressionFilterTest {
         assertTrue(brotliSize <= gzipSize,
                 "Brotli (" + brotliSize + " bytes) should compress better than gzip (" + gzipSize + " bytes)");
     }
+
     private String decompressBrotli(byte[] compressed) throws Exception {
         byte[] decompressed = Decoder.decompress(compressed).getDecompressedData();
         return new String(decompressed, StandardCharsets.UTF_8);

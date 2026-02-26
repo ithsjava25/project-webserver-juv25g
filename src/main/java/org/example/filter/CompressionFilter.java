@@ -97,24 +97,41 @@ public class CompressionFilter implements Filter {
             return;
         }
 
-        String acceptLower = acceptEncoding.toLowerCase();
-
-        if (acceptLower.contains("br")) {
+        if (isEncodingAccepted(acceptEncoding, "br")) {
             if (tryBrotliCompression(response, originalBody)) {
                 return;
             }
         }
 
-        if (acceptLower.contains("gzip")) {
+        if (isEncodingAccepted(acceptEncoding, "gzip")) {
             tryGzipCompression(response, originalBody);
         }
     }
+
+    private boolean isEncodingAccepted(String acceptEncoding, String encoding) {
+        String[] parts = acceptEncoding.toLowerCase().split(",");
+
+        for (String part : parts) {
+            part = part.trim();
+
+            if (part.startsWith(encoding)) {
+                if (part.contains("q=0")) {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private boolean tryBrotliCompression(HttpResponseBuilder response, byte[] originalBody) {
         try {
             byte[] compressed = brotliCompress(originalBody);
 
             response.setBody(compressed);
             response.setHeader("Content-Encoding", "br");
+            response.removeHeader("Content-Length");
             updateVaryHeader(response);
 
             return true;
@@ -123,18 +140,21 @@ public class CompressionFilter implements Filter {
             return false;
         }
     }
+
     private void tryGzipCompression(HttpResponseBuilder response, byte[] originalBody) {
         try {
             byte[] compressed = gzipCompress(originalBody);
 
             response.setBody(compressed);
             response.setHeader("Content-Encoding", "gzip");
+            response.removeHeader("Content-Length");
             updateVaryHeader(response);
 
         } catch (IOException e) {
             System.err.println("Gzip compression failed: " + e.getMessage());
         }
     }
+
     private void updateVaryHeader(HttpResponseBuilder response) {
         String existingVary = response.getHeader("Vary");
         if (existingVary != null && !existingVary.isEmpty()) {
