@@ -1,8 +1,11 @@
 package org.example.filter;
 
+import com.aayushatharva.brotli4j.Brotli4jLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.aayushatharva.brotli4j.decoder.Decoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +17,15 @@ import java.util.zip.GZIPInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CompressionFilterTest {
+
+    @BeforeAll
+    static void setupBrotli() {
+        try {
+            Brotli4jLoader.ensureAvailability();
+        } catch (Exception e) {
+            System.err.println("Brotli not available for tests: " + e.getMessage());
+        }
+    }
 
     @Test
     void testGzipCompressionWhenClientSupportsIt() throws Exception {
@@ -194,4 +206,101 @@ class CompressionFilterTest {
         assertTrue(resultBody.length < body.getBytes(StandardCharsets.UTF_8).length,
                 "Should compress even when Content-Type has charset");
     }
+    @Test
+    void testBrotliCompression() throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "br");
+
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+
+        String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setBody(largeBody);
+        response.setHeaders(Map.of("Content-Type", "text/html"));
+
+        FilterChain mockChain = (req, res) -> {};
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(request, response, mockChain);
+
+        assertEquals("br", response.getHeader("Content-Encoding"));
+
+        byte[] compressedBody = getBodyFromResponse(response);
+        assertTrue(compressedBody.length < largeBody.getBytes(StandardCharsets.UTF_8).length);
+
+        String decompressed = decompressBrotli(compressedBody);
+        assertEquals(largeBody, decompressed);
+    }
+    @Test
+    void testBrotliPreferredOverGzip() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "gzip, br");
+
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+
+        String body = "<html>" + "content ".repeat(200) + "</html>";
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setBody(body);
+        response.setHeaders(Map.of("Content-Type", "text/html"));
+
+        FilterChain mockChain = (req, res) -> {};
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(request, response, mockChain);
+
+        assertEquals("br", response.getHeader("Content-Encoding"));
+    }
+    @Test
+    void testGzipWhenOnlyGzipAccepted() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "gzip");
+
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+
+        String body = "<html>" + "content ".repeat(200) + "</html>";
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setBody(body);
+        response.setHeaders(Map.of("Content-Type", "text/html"));
+
+        FilterChain mockChain = (req, res) -> {};
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(request, response, mockChain);
+
+        assertEquals("gzip", response.getHeader("Content-Encoding"));
+    }
+    @Test
+    void testBrotliCompressionBetterThanGzip() {
+        Map<String, String> headers = new HashMap<>();
+        String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
+
+        headers.put("Accept-Encoding", "br");
+        HttpRequest brotliRequest = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpResponseBuilder brotliResponse = new HttpResponseBuilder();
+        brotliResponse.setBody(largeBody);
+        brotliResponse.setHeaders(Map.of("Content-Type", "text/html"));
+
+        CompressionFilter filter = new CompressionFilter();
+        filter.doFilter(brotliRequest, brotliResponse, (req, res) -> {});
+
+        int brotliSize = getBodyFromResponse(brotliResponse).length;
+
+        headers.put("Accept-Encoding", "gzip");
+        HttpRequest gzipRequest = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpResponseBuilder gzipResponse = new HttpResponseBuilder();
+        gzipResponse.setBody(largeBody);
+        gzipResponse.setHeaders(Map.of("Content-Type", "text/html"));
+
+        filter.doFilter(gzipRequest, gzipResponse, (req, res) -> {});
+
+        int gzipSize = getBodyFromResponse(gzipResponse).length;
+
+        assertTrue(brotliSize <= gzipSize,
+                "Brotli (" + brotliSize + " bytes) should compress better than gzip (" + gzipSize + " bytes)");
+    }
+    private String decompressBrotli(byte[] compressed) throws Exception {
+        byte[] decompressed = Decoder.decompress(compressed).getDecompressedData();
+        return new String(decompressed, StandardCharsets.UTF_8);
+    }
+
 }

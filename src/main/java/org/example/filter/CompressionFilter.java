@@ -1,5 +1,6 @@
 package org.example.filter;
 
+import com.aayushatharva.brotli4j.Brotli4jLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import com.aayushatharva.brotli4j.encoder.Encoder;
@@ -32,6 +33,14 @@ import java.util.zip.GZIPOutputStream;
 
 public class CompressionFilter implements Filter {
     private static final int MIN_COMPRESS_SIZE = 1024;
+
+    static {
+        try {
+            Brotli4jLoader.ensureAvailability();
+        } catch (Exception e) {
+            System.err.println("Brotli native library not available: " + e.getMessage());
+        }
+    }
 
     private static final Set<String> COMPRESSIBLE_TYPES = Set.of(
             "text/html",
