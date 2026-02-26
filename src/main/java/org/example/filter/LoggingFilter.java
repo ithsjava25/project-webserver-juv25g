@@ -28,7 +28,7 @@ public class LoggingFilter implements Filter {
             long endTime = System.nanoTime();
             long processingTimeInMs = (endTime - startTime) / 1000000;
 
-            logg.info("REQUEST {} {} | STATUS: {} | TIME: {}ms",
+            logg.info("REQUEST: {} {} | STATUS: {} | TIME: {}ms",
                     request.getMethod(), request.getPath(), response.getStatusCode(), processingTimeInMs);
         }
 
