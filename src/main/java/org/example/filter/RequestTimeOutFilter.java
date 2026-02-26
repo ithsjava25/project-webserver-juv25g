@@ -23,7 +23,7 @@ public class RequestTimeOutFilter implements Filter {
            Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
             Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
             60L, TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(1024),
+            new ArrayBlockingQueue<>(50),
             new ThreadPoolExecutor.AbortPolicy()
     );
 
@@ -42,6 +42,8 @@ public class RequestTimeOutFilter implements Filter {
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
 
         HttpResponseBuilder shadowResponse = new HttpResponseBuilder();
+        // Preserve state already present on the real response before downstream execution
+        transferResponseData(response, shadowResponse);
 
         Future<?> future;
              try {
@@ -90,8 +92,9 @@ public class RequestTimeOutFilter implements Filter {
         target.setStatusCode(source.getStatusCode());
         target.setHeaders(source.getHeaders());
 
-        if (source.getByteBody() != null) {
-            target.setBody(source.getByteBody());
+        byte[] sourceBytes = source.getByteBody();
+        if (sourceBytes != null) {
+            target.setBody(sourceBytes);
         } else {
             target.setBody(source.getBody());
         }
