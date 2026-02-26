@@ -2,6 +2,7 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import com.aayushatharva.brotli4j.encoder.Encoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -138,6 +139,14 @@ public class CompressionFilter implements Filter {
         }
 
         return byteStream.toByteArray();
+    }
+
+    private byte[] brotliCompress(byte[] data) throws IOException {
+        try {
+            return Encoder.compress(data);
+        } catch (Exception e) {
+            throw new IOException("Brotli compression failed", e);
+        }
     }
 
     @Override
