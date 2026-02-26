@@ -1,19 +1,20 @@
 package org.example;
 
 import org.example.http.HttpResponseBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class TcpServer {
 
     private final int port;
     private final ConnectionFactory connectionFactory;
+    private static final Logger logg = LoggerFactory.getLogger(TcpServer.class);
 
     public TcpServer(int port, ConnectionFactory connectionFactory) {
         this.port = port;
@@ -21,12 +22,12 @@ public class TcpServer {
     }
 
     public void start() {
-        System.out.println("Starting TCP server on port " + port);
+        logg.info("Starting TCP server on port {}", port);
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept(); // block
-                System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
+                logg.info("Client connected: {}", clientSocket.getRemoteSocketAddress());
                 Thread.ofVirtual().start(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
@@ -38,7 +39,7 @@ public class TcpServer {
         try(client){
             processRequest(client);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to close socket", e);
+            logg.error("Failed to close socket", e);
         }
     }
 
@@ -68,7 +69,7 @@ public class TcpServer {
                 out.write(response.build());
                 out.flush();
             } catch (IOException e) {
-                System.err.println("Failed to send 500 response: " + e.getMessage());
+                logg.error("Failed to send 500 response", e);
             }
         }
     }
