@@ -51,13 +51,12 @@ class StaticFileHandlerTest {
         staticFileHandler.handle(request, responseBuilder); //Get test.html and update the responseBuilder
 
         //Assert
-        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
-
-        assertTrue(response.contains("HTTP/1.1 " + SC_OK +  " OK")); // Assert the status
-        assertTrue(response.contains("Hello Test")); //Assert the content in the file
-
-        assertTrue(response.contains("Content-Type: text/html; charset=UTF-8")); // Verify the correct Content-type header
-
+        assertEquals(SC_OK, responseBuilder.getStatusCode());
+        assertEquals("text/html; charset=UTF-8", responseBuilder.getHeader("Content-Type"));
+        // Check body. Note: responseBuilder.setBody(bytes) sets bytebody.
+        // getBodyBytes() returns bytebody if present.
+        String body = new String(responseBuilder.getBodyBytes(), StandardCharsets.UTF_8);
+        assertTrue(body.contains("Hello Test"));
     }
 
     @Test
@@ -77,10 +76,7 @@ class StaticFileHandlerTest {
         staticFileHandler.handle(request, responseBuilder); // Request a file that clearly doesn't exist to trigger the 404 logic
 
         //Assert
-        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
-
-        assertTrue(response.contains("HTTP/1.1 " + SC_NOT_FOUND + " Not Found")); // Assert the status
-
+        assertEquals(SC_NOT_FOUND, responseBuilder.getStatusCode());
     }
 
     @Test
@@ -99,9 +95,9 @@ class StaticFileHandlerTest {
         handler.handle(request, responseBuilder);
 
         // Assert
-        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
-        assertFalse(response.contains("TOP SECRET"));
-        assertTrue(response.contains("HTTP/1.1 " + SC_FORBIDDEN + " Forbidden"));
+        assertEquals(SC_FORBIDDEN, responseBuilder.getStatusCode());
+        String body = new String(responseBuilder.getBodyBytes(), StandardCharsets.UTF_8);
+        assertFalse(body.contains("TOP SECRET"));
     }
 
     @ParameterizedTest
@@ -124,7 +120,7 @@ class StaticFileHandlerTest {
         handler.handle(request, responseBuilder);
 
         // Assert
-        assertTrue(new String(responseBuilder.build(), StandardCharsets.UTF_8).contains("HTTP/1.1 " + SC_OK + " OK"));
+        assertEquals(SC_OK, responseBuilder.getStatusCode());
     }
 
     @Test
@@ -141,8 +137,7 @@ class StaticFileHandlerTest {
         handler.handle(request, responseBuilder);
 
         // Assert
-        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
-        assertFalse(response.contains("HTTP/1.1 " + SC_OK + " OK"));
-        assertTrue(response.contains("HTTP/1.1 " + SC_NOT_FOUND +  " Not Found"));
+        assertNotEquals(SC_OK, responseBuilder.getStatusCode());
+        assertEquals(SC_NOT_FOUND, responseBuilder.getStatusCode());
     }
 }

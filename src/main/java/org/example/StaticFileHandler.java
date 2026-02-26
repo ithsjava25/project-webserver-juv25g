@@ -86,10 +86,19 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
     }
 
     private String defaultFile(String uri) {
-        if (uri == null)
+        if (uri == null || uri.isBlank()) {
             return "index.html";
-        else if (uri.endsWith("/"))
-            return uri.concat("index.html");
-        return uri;
+        }
+        String normalized = uri;
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        if (normalized.isEmpty()) {
+            return "index.html";
+        }
+        if (normalized.endsWith("/")) {
+            normalized = normalized + "index.html";
+        }
+        return normalized;
     }
 }

@@ -5,6 +5,7 @@ import org.example.httpparser.HttpRequest;
 import org.example.server.TerminalHandler;
 
 import java.util.List;
+import java.util.Objects;
 
 public class FilterChainImpl implements FilterChain {
 
@@ -20,8 +21,8 @@ public class FilterChainImpl implements FilterChain {
 
     public FilterChainImpl(List<Filter> filters,
                            TerminalHandler terminalHandler) {
-        this.filters = filters;
-        this.terminalHandler = terminalHandler;
+        this.filters = Objects.requireNonNull(filters, "filters must not be null");
+        this.terminalHandler = Objects.requireNonNull(terminalHandler, "terminalHandler must not be null");
     }
 
     @Override
