@@ -24,8 +24,19 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
     }
 
     private void handleGetRequest(HttpRequest request, HttpResponseBuilder response) {
-        String uri = request.getPath();
         byte[] fileBytes;
+        if (!"GET".equals(request.getMethod())) {
+            fileBytes = "405 Method Not Allowed".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            response.setContentType(TEXT_PLAIN_CHARSET_UTF_8);
+            response.setStatusCode(SC_METHOD_NOT_ALLOWED);
+            response.setBody(fileBytes);
+            return;
+        }
+
+        String uri = request.getPath();
+        if (uri == null) {
+            uri = "";
+        }
 
         // Sanitize URI
         int q = uri.indexOf('?');
@@ -46,11 +57,7 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
             throw new RuntimeException(e);
         }
 
-        if (!"GET".equals(request.getMethod())) {
-            fileBytes = "405 Method Not Allowed".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            response.setContentType(TEXT_PLAIN_CHARSET_UTF_8);
-            response.setStatusCode(SC_METHOD_NOT_ALLOWED);
-        } else if (!file.toPath().startsWith(root.toPath())) {
+        if (!file.toPath().startsWith(root.toPath())) {
             fileBytes = "403 Forbidden".getBytes(java.nio.charset.StandardCharsets.UTF_8);
             response.setContentType(TEXT_PLAIN_CHARSET_UTF_8);
             response.setStatusCode(SC_FORBIDDEN);

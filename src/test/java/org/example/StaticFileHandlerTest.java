@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit test class for verifying the behavior of the StaticFileHandler class.
- *
+ * <p>
  * This test class ensures that StaticFileHandler correctly handles GET requests
  * for static files, including both cases where the requested file exists and
  * where it does not. Temporary directories and files are utilized in tests to
  * ensure no actual file system dependencies during test execution.
- *
+ * <p>
  * Key functional aspects being tested include:
  * - Correct response status code and content for an existing file.
  * - Correct response status code and fallback behavior for a missing file.
@@ -83,7 +83,7 @@ class StaticFileHandlerTest {
     void test_path_traversal_should_return_403() throws IOException {
         // Arrange
         Path secret = tempDir.resolve("secret.txt");
-        Files.writeString(secret,"TOP SECRET");
+        Files.writeString(secret, "TOP SECRET");
         Path webRoot = tempDir.resolve("www");
         Files.createDirectories(webRoot);
         StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
@@ -139,5 +139,21 @@ class StaticFileHandlerTest {
         // Assert
         assertNotEquals(SC_OK, responseBuilder.getStatusCode());
         assertEquals(SC_NOT_FOUND, responseBuilder.getStatusCode());
+    }
+
+    @Test
+    void non_get_method_should_return_405() throws IOException {
+        Path webRoot = tempDir.resolve("www");
+        Files.createDirectories(webRoot);
+        Files.writeString(webRoot.resolve("index.html"), "Hello");
+        StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
+
+        HttpRequest request = new HttpRequest("POST", "index.html", "HTTP/1.1", Collections.emptyMap(), "");
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+
+        handler.handle(request, responseBuilder);
+
+        assertEquals(SC_METHOD_NOT_ALLOWED, responseBuilder.getStatusCode());
+        assertEquals("text/plain; charset=utf-8", responseBuilder.getHeader("Content-Type"));
     }
 }
