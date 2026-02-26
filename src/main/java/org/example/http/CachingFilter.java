@@ -1,14 +1,17 @@
 package org.example.http;
 
+import org.example.config.AppConfig;
+import org.example.config.ConfigLoader;
 import org.example.filter.Filter;
 import org.example.filter.FilterChain;
 import org.example.httpparser.HttpRequest;
 
 import java.io.File;
+import java.io.ObjectInputFilter;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-/// /////
+
 
 public class CachingFilter implements Filter {
 
@@ -34,10 +37,13 @@ public class CachingFilter implements Filter {
             path = path.substring(1);
         }
 
-        File file = new File("www", path);
+        // Ingen mer hårtkodat utan sökväg från ConfigLoader
+        String rootDir = ConfigLoader.get().server().rootDir();
+        File file = new File(rootDir, path);
+
 
         if(!file.exists()){
-            response.setStatusCode(404);
+            response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
             return;
         }
 
@@ -51,7 +57,7 @@ public class CachingFilter implements Filter {
 
 
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
-            response.setStatusCode(304);
+            response.setStatusCode(HttpResponseBuilder.SC_NOT_MODIFIED);
             return;
         }
 
@@ -62,7 +68,7 @@ public class CachingFilter implements Filter {
                         Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(modifiedSince));
 
                 if (!lastModified.isAfter(ifModifiedSinceInstant)) {
-                    response.setStatusCode(304);
+                    response.setStatusCode(HttpResponseBuilder.SC_NOT_MODIFIED);
                     return;
                 }
 
@@ -80,11 +86,13 @@ public class CachingFilter implements Filter {
 
 
         response.addHeader("ETag", eTag);
+        response.addHeader("Last-Modified", DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified.atZone(java.time.ZoneOffset.UTC)));
+        response.addHeader("Cache-Control", "public, max-age=3600");
 
     }
 
     private String generateEtag(File file) {
-        return String.valueOf(file.lastModified());
+        return "\"" + file.lastModified() + "-" + file.length() + "\"";
 
     }
 }
