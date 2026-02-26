@@ -39,13 +39,18 @@ import java.util.zip.GZIPOutputStream;
 
 public class CompressionFilter implements Filter {
     private static final int MIN_COMPRESS_SIZE = 1024;
+    private static final boolean BROTLI_AVAILABLE;
 
     static {
+        boolean available;
         try {
             Brotli4jLoader.ensureAvailability();
+            available = true;
         } catch (Exception e) {
+            available = false;
             System.err.println("Brotli native library not available: " + e.getMessage());
         }
+        BROTLI_AVAILABLE = available;
     }
 
     private static final Set<String> COMPRESSIBLE_TYPES = Set.of(
@@ -97,7 +102,7 @@ public class CompressionFilter implements Filter {
             return;
         }
 
-        if (isEncodingAccepted(acceptEncoding, "br")) {
+        if (BROTLI_AVAILABLE && isEncodingAccepted(acceptEncoding, "br")) {
             if (tryBrotliCompression(response, originalBody)) {
                 return;
             }
