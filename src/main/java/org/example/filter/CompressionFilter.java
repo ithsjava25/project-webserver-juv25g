@@ -119,6 +119,7 @@ public class CompressionFilter implements Filter {
 
             return true;
         } catch (IOException e) {
+            System.err.println("Brotli compression failed, falling back to gzip: " + e.getMessage());
             return false;
         }
     }
@@ -131,6 +132,7 @@ public class CompressionFilter implements Filter {
             updateVaryHeader(response);
 
         } catch (IOException e) {
+            System.err.println("Gzip compression failed: " + e.getMessage());
         }
     }
     private void updateVaryHeader(HttpResponseBuilder response) {
