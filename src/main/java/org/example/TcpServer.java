@@ -27,40 +27,54 @@ public class TcpServer {
                     clientSocket.setSoTimeout(10000);
                     Thread.ofVirtual().start(() -> handleClient(clientSocket));
                 } catch (Exception _) {
-                    // VIKTIGT: Här stänger vi socketen om tråden dör,
-                    // även om vi inte loggar lokalt.
+                    // Om tråden inte kan starta, stäng direkt för att inte läcka
                     closeQuietly(clientSocket);
                 }
             }
         } catch (IOException e) {
-            // SonarQube S112: Kasta specifikt exception istället för generic RuntimeException
-            throw new IllegalStateException("TCP Server failed to remain open on port " + port, e);
+            throw new IllegalStateException("TCP Server failed on port " + port, e);
         }
     }
 
     protected void handleClient(Socket client) {
-        // try-with-resources garanterar att socket stängs
-        try (client) {
+        try {
+            // Kör logiken först
             processRequest(client);
         } catch (Exception _) {
-            // Felhantering sker i processRequest,
-            // men vi fångar upp eventuella stängningsfel här.
+            // Eventuella oväntade fel fångas här (loggas här med nya system)
+        } finally {
+            closeQuietly(client);
         }
     }
 
     private void processRequest(Socket client) {
-        // ConnectionHandler stängs automatiskt
-        try (ConnectionHandler handler = connectionFactory.create(client)) {
+        ConnectionHandler handler = null;
+        try {
+            // Skapa handlern manuellt (ingen try-with-resources här heller)
+            handler = connectionFactory.create(client);
             handler.runConnectionHandler();
         } catch (Exception _) {
-            // Om något går snett i logiken skickar vi 500-svaret
+            // 1. Logga felet (loggning system)
+
+            // 2. Skicka 500-svar (Socketen är fortfarande öppen här!)
             handleInternalServerError(client);
+        } finally {
+            // 3. Stäng handlern manuellt
+            if (handler != null) {
+                try {
+                    handler.close();
+                } catch (Exception _) {
+                    // Ignorera fel vid stängning av handlern
+                }
+            }
         }
     }
 
     private void handleInternalServerError(Socket client) {
-        // Säkerhetsspärr: Skriv bara om socket lever
-        if (client.isClosed() || !client.isConnected()) return;
+        // Kolla om vi kan prata med klienten
+        if (client.isClosed() || !client.isConnected()) {
+            return;
+        }
 
         HttpResponseBuilder response = new HttpResponseBuilder();
         response.setStatusCode(HttpResponseBuilder.SC_INTERNAL_SERVER_ERROR);
@@ -72,7 +86,7 @@ public class TcpServer {
             out.write(response.build());
             out.flush();
         } catch (IOException _) {
-            // Unnamed pattern (_) - Java 21 standard för ignorerade fel
+            // Ignorera nätverksfel vid sändning
         }
     }
 
