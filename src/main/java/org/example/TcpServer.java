@@ -27,7 +27,6 @@ public class TcpServer {
                     clientSocket.setSoTimeout(10000);
                     Thread.ofVirtual().start(() -> handleClient(clientSocket));
                 } catch (Exception _) {
-                    // Om tråden inte kan starta, stäng direkt för att inte läcka
                     closeQuietly(clientSocket);
                 }
             }
@@ -37,41 +36,31 @@ public class TcpServer {
     }
 
     protected void handleClient(Socket client) {
-        try {
-            // Kör logiken först
+        try (client) {
             processRequest(client);
         } catch (Exception _) {
-            // Eventuella oväntade fel fångas här (loggas här med nya system)
-        } finally {
-            closeQuietly(client);
         }
     }
 
     private void processRequest(Socket client) {
         ConnectionHandler handler = null;
         try {
-            // Skapa handlern manuellt (ingen try-with-resources här heller)
             handler = connectionFactory.create(client);
             handler.runConnectionHandler();
         } catch (Exception _) {
-            // 1. Logga felet (loggning system)
-
-            // 2. Skicka 500-svar (Socketen är fortfarande öppen här!)
             handleInternalServerError(client);
         } finally {
-            // 3. Stäng handlern manuellt
             if (handler != null) {
                 try {
                     handler.close();
                 } catch (Exception _) {
-                    // Ignorera fel vid stängning av handlern
                 }
             }
         }
     }
 
     private void handleInternalServerError(Socket client) {
-        // Kolla om vi kan prata med klienten
+        // Kontrollera att vi kan skriva till klienten
         if (client.isClosed() || !client.isConnected()) {
             return;
         }
@@ -86,7 +75,7 @@ public class TcpServer {
             out.write(response.build());
             out.flush();
         } catch (IOException _) {
-            // Ignorera nätverksfel vid sändning
+            // Ignorera nätverksfel vid sändning av felmeddelandet
         }
     }
 
@@ -95,7 +84,7 @@ public class TcpServer {
             try {
                 socket.close();
             } catch (IOException _) {
-                // Tyst stängning för att förhindra krasch under felhantering
+                // Tyst stängning
             }
         }
     }
