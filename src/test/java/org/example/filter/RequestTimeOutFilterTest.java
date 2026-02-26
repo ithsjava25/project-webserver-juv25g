@@ -4,6 +4,9 @@ import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.example.http.HttpResponseBuilder.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -28,13 +31,15 @@ class RequestTimeOutFilterTest {
     void requestTimeOutFilter_shouldSucceedWhenFast() {
 
         // Arrange --> FilterChain som körs utan fördröjning
-        FilterChain fastChain = (request, response) -> {};
+        AtomicBoolean chainInvoked = new AtomicBoolean(false);
+        FilterChain fastChain = (request, response) -> chainInvoked.set(true);
 
         // Act
         filter.doFilter(request, response, fastChain);
 
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(SC_OK);
+        assertThat(chainInvoked.get()).isTrue();
     }
 
     // Timeout Path --> Anropet tar för lång tid och kastar RunTimeException
