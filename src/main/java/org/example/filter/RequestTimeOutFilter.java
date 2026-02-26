@@ -19,8 +19,7 @@ public class RequestTimeOutFilter implements Filter {
     private static final Logger logger = Logger.getLogger(RequestTimeOutFilter.class.getName());
 
     /** Thread pool used to execute the filter chain asynchronously for timeout monitoring. */
-
-   private static final ExecutorService executor = new ThreadPoolExecutor(
+   private final ExecutorService executor = new ThreadPoolExecutor(
            Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
             Math.max(4, Runtime.getRuntime().availableProcessors() * 2),
             60L, TimeUnit.SECONDS,
@@ -43,7 +42,6 @@ public class RequestTimeOutFilter implements Filter {
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
 
         HttpResponseBuilder shadowResponse = new HttpResponseBuilder();
-
 
         Future<?> future;
              try {

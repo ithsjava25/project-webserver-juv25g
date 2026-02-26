@@ -2,7 +2,6 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.example.http.HttpResponseBuilder.*;
@@ -40,7 +39,7 @@ class RequestTimeOutFilterTest {
 
     // Timeout Path --> Anropet tar för lång tid och kastar RunTimeException
     @Test
-    void requestTimeOutFilter_shouldThrowExceptionWhenSlow() {
+    void requestTimeOutFilter_shouldReturn504ResponseWhenSlow() {
         // Arrange --> En simulation av en fördröjning
         FilterChain slowChain = (request, response) -> {
             try {
@@ -76,5 +75,12 @@ class RequestTimeOutFilterTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo((SC_INTERNAL_SERVER_ERROR));
 
+    }
+    @Test
+    void constructor_shouldRejectNonPositiveTimeout() {
+        assertThatThrownBy(() -> new RequestTimeOutFilter(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new RequestTimeOutFilter(-1))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
