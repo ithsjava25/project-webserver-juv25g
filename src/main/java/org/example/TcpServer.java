@@ -39,6 +39,7 @@ public class TcpServer {
         try (client) {
             processRequest(client);
         } catch (Exception _) {
+            // Ska fyllas in med nya pr
         }
     }
 
@@ -54,6 +55,7 @@ public class TcpServer {
                 try {
                     handler.close();
                 } catch (Exception _) {
+                    // ska fyllas in med nya PR
                 }
             }
         }
@@ -61,7 +63,7 @@ public class TcpServer {
 
     private void handleInternalServerError(Socket client) {
         // Kontrollera att vi kan skriva till klienten
-        if (client.isClosed() || !client.isConnected()) {
+        if (client.isClosed() || !client.isConnected() || client.isOutputShutdown()) {
             return;
         }
 
