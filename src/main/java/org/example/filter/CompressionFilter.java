@@ -12,20 +12,26 @@ import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Compression filter that compresses HTTP responses with gzip when supported by client.
+ * Compression filter that compresses HTTP responses with gzip or Brotli when supported by client.
  *
- * <p>This filter applies gzip compression to HTTP responses when the following conditions are met:
+ * <p>This filter applies compression to HTTP responses when the following conditions are met:
  * <ul>
- *   <li>Client sends Accept-Encoding header containing "gzip"</li>
+ *   <li>Client sends Accept-Encoding header containing "gzip" or "br" (Brotli)</li>
  *   <li>Response body is larger than 1KB (MIN_COMPRESS_SIZE)</li>
  *   <li>Content-Type is compressible (text-based formats like HTML, CSS, JS, JSON)</li>
  *   <li>Content-Type is not already compressed (images, videos, zip files)</li>
  * </ul>
  *
+ * <p>Compression priority when client supports multiple algorithms:
+ * <ol>
+ *   <li>Brotli (br) - Best compression ratio</li>
+ *   <li>Gzip - Fallback if Brotli fails or not accepted</li>
+ * </ol>
+ *
  * <p>When compression is applied, the filter:
  * <ul>
- *   <li>Compresses the response body using gzip</li>
- *   <li>Sets Content-Encoding: gzip header</li>
+ *   <li>Compresses the response body using the best available algorithm</li>
+ *   <li>Sets Content-Encoding header (br or gzip)</li>
  *   <li>Sets Vary: Accept-Encoding header for proper caching</li>
  * </ul>
  *
