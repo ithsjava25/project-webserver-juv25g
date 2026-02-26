@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class TcpServer {
 
-    // Använder Logger istället för System.out
+    //  Använder Logger istället för System.out/err
     private static final Logger logger = Logger.getLogger(TcpServer.class.getName());
 
     private final int port;
@@ -24,19 +24,20 @@ public class TcpServer {
     }
 
     public void start() {
-        logger.log(Level.INFO, "Starting TCP server on port {0}", port);
+        //  Lambda för att skjuta upp strängbygget (Deferred execution)
+        logger.log(Level.INFO, () -> "Starting TCP server on port " + port);
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (!Thread.currentThread().isInterrupted()) {
                 Socket clientSocket = serverSocket.accept();
 
-                // Lambda för att skjuta upp strängbygget
                 logger.log(Level.INFO, () -> "Client connected: " + clientSocket.getRemoteSocketAddress());
 
                 try {
                     clientSocket.setSoTimeout(10000);
                     Thread.ofVirtual().start(() -> handleClient(clientSocket));
                 } catch (Exception e) {
+                    //  Hanterar misslyckad trådstart för att undvika resursläckor
                     logger.log(Level.SEVERE, "Could not start thread for client", e);
                     closeQuietly(clientSocket);
                 }
@@ -48,6 +49,7 @@ public class TcpServer {
     }
 
     protected void handleClient(Socket client) {
+        //  try-with-resources på variabeln stänger socket automatiskt
         try (client) {
             processRequest(client);
         } catch (IOException e) {
@@ -58,7 +60,6 @@ public class TcpServer {
     }
 
     private void processRequest(Socket client) {
-        //  Använder try-with-resources på ConnectionHandler (AutoCloseable)
         try (ConnectionHandler handler = connectionFactory.create(client)) {
             handler.runConnectionHandler();
         } catch (Exception e) {
@@ -68,7 +69,7 @@ public class TcpServer {
     }
 
     private void handleInternalServerError(Socket client) {
-        if (client.isClosed()) return;
+        if (client.isClosed() || !client.isConnected()) return;
 
         HttpResponseBuilder response = new HttpResponseBuilder();
         response.setStatusCode(HttpResponseBuilder.SC_INTERNAL_SERVER_ERROR);
@@ -80,7 +81,7 @@ public class TcpServer {
             out.write(response.build());
             out.flush();
         } catch (IOException _) {
-            // Unnamed pattern (_)
+            // Unnamed pattern (_) för att markera att felet medvetet ignoreras
         }
     }
 
