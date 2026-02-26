@@ -11,7 +11,7 @@ abstract class HttpParseRequestLine {
     private String uri;
     private String version;
 
-    private static final Logger logger = LoggerFactory.getLogger(HttpParseRequestLine.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpParseRequestLine.class);
 
     public void parseHttpRequest(BufferedReader br) throws IOException {
         BufferedReader reader = br;
@@ -33,7 +33,7 @@ abstract class HttpParseRequestLine {
             setVersion(requestLineArray[2]);
         }
 
-        logger.debug("METHOD: {} | URI: {} | VERSION: {}",
+        log.debug("METHOD: {} | URI: {} | VERSION: {}",
                 getMethod(), getUri(), getVersion());
     }
 

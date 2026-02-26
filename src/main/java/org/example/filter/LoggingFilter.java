@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class LoggingFilter implements Filter {
 
-    private static final Logger logg = LoggerFactory.getLogger(LoggingFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(LoggingFilter.class);
 
     @Override
     public void init() {
@@ -28,7 +28,7 @@ public class LoggingFilter implements Filter {
             long endTime = System.nanoTime();
             long processingTimeInMs = (endTime - startTime) / 1000000;
 
-            logg.info("REQUEST: {} {} | STATUS: {} | TIME: {}ms",
+            log.info("REQUEST: {} {} | STATUS: {} | TIME: {}ms",
                     request.getMethod(), request.getPath(), response.getStatusCode(), processingTimeInMs);
         }
 

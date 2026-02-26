@@ -14,7 +14,7 @@ public class TcpServer {
 
     private final int port;
     private final ConnectionFactory connectionFactory;
-    private static final Logger logg = LoggerFactory.getLogger(TcpServer.class);
+    private static final Logger log = LoggerFactory.getLogger(TcpServer.class);
 
     public TcpServer(int port, ConnectionFactory connectionFactory) {
         this.port = port;
@@ -22,12 +22,12 @@ public class TcpServer {
     }
 
     public void start() {
-        logg.info("Starting TCP server on port {}", port);
+        log.info("Starting TCP server on port {}", port);
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept(); // block
-                logg.info("Client connected: {}", clientSocket.getRemoteSocketAddress());
+                log.info("Client connected: {}", clientSocket.getRemoteSocketAddress());
                 Thread.ofVirtual().start(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
@@ -39,7 +39,7 @@ public class TcpServer {
         try(client){
             processRequest(client);
         } catch (Exception e) {
-            logg.error("Failed to close socket", e);
+            log.error("Failed to close socket", e);
         }
     }
 
@@ -69,7 +69,7 @@ public class TcpServer {
                 out.write(response.build());
                 out.flush();
             } catch (IOException e) {
-                logg.error("Failed to send 500 response", e);
+                log.error("Failed to send 500 response", e);
             }
         }
     }
