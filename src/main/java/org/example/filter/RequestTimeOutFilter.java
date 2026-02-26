@@ -77,10 +77,9 @@ public class RequestTimeOutFilter implements Filter {
 
                 return;
 
-
-
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            future.cancel(true);
             handleInternalError(response, e);
             return;
 
@@ -109,14 +108,14 @@ public class RequestTimeOutFilter implements Filter {
 
     @Override
     public void destroy() {
-//        executor.shutdown();
-//        try {
-//            if(!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-//                executor.shutdownNow();
-//            }
-//        } catch (InterruptedException e) {
-//            executor.shutdownNow();
-//            Thread.currentThread().interrupt();
-//        }
+        executor.shutdown();
+        try {
+            if(!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

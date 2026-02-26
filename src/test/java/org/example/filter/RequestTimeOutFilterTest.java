@@ -50,13 +50,10 @@ class RequestTimeOutFilterTest {
             }
         };
 
-        // Act & Assert
+        // Act
         filter.doFilter(request, response, slowChain);
 
-//        assertThatThrownBy(() -> filter.doFilter(request, response, slowChain))
-//                .isInstanceOf(RuntimeException.class)
-//                .hasMessageContaining("Timeout");
-
+        // Assert
         assertThat(response.getStatusCode())
                 .as("Status code should be 504 at timeout")
                 .isEqualTo(SC_GATEWAY_TIMEOUT);
@@ -68,16 +65,15 @@ class RequestTimeOutFilterTest {
     // Exception Path --> Oväntat undantag kastar en exception
     @Test
     void requestTimeOutFilter_shouldHandleGenericException() {
+        // Arrange
         FilterChain errorChain = (request, response) -> {
             throw new RuntimeException("Unexpected error");
         };
 
+        // Act
         filter.doFilter(request, response, errorChain);
 
-//        assertThatThrownBy(() -> filter.doFilter(request, response, errorChain))
-//                .isInstanceOf(RuntimeException.class)
-//                .hasMessageContaining("Filter execution error");
-
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo((SC_INTERNAL_SERVER_ERROR));
 
     }
