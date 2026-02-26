@@ -65,7 +65,7 @@ public final class ConfigLoader {
         }
     }
 
-    static void resetForTests() {
+    public static void resetForTests() {
         cached = null;
     }
 }
