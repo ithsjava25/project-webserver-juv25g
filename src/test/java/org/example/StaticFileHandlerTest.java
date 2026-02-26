@@ -1,16 +1,20 @@
 package org.example;
 
+import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Collections;
+
 import static org.example.http.HttpResponseBuilder.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit test class for verifying the behavior of the StaticFileHandler class.
@@ -40,14 +44,14 @@ class StaticFileHandlerTest {
         //Using the new constructor in StaticFileHandler to reroute so the tests uses the temporary folder instead of the hardcoded www
         StaticFileHandler staticFileHandler = new StaticFileHandler(tempDir.toString());
 
-        //Using ByteArrayOutputStream instead of Outputstream during tests to capture the servers response in memory, fake stream
-        ByteArrayOutputStream fakeOutput = new ByteArrayOutputStream();
+        HttpRequest request = new HttpRequest("GET", "test.html", "HTTP/1.1", Collections.emptyMap(), "");
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
 
         //Act
-        staticFileHandler.sendGetRequest(fakeOutput, "test.html"); //Get test.html and write the answer to fakeOutput
+        staticFileHandler.handle(request, responseBuilder); //Get test.html and update the responseBuilder
 
         //Assert
-        String response = fakeOutput.toString();//Converts the captured byte stream into a String for verification
+        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
 
         assertTrue(response.contains("HTTP/1.1 " + SC_OK +  " OK")); // Assert the status
         assertTrue(response.contains("Hello Test")); //Assert the content in the file
@@ -66,14 +70,14 @@ class StaticFileHandlerTest {
         //Using the new constructor in StaticFileHandler to reroute so the tests uses the temporary folder instead of the hardcoded www
         StaticFileHandler staticFileHandler = new StaticFileHandler(tempDir.toString());
 
-        //Using ByteArrayOutputStream instead of Outputstream during tests to capture the servers response in memory, fake stream
-        ByteArrayOutputStream fakeOutput = new ByteArrayOutputStream();
+        HttpRequest request = new HttpRequest("GET", "notExistingFile.html", "HTTP/1.1", Collections.emptyMap(), "");
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
 
         //Act
-        staticFileHandler.sendGetRequest(fakeOutput, "notExistingFile.html"); // Request a file that clearly doesn't exist to trigger the 404 logic
+        staticFileHandler.handle(request, responseBuilder); // Request a file that clearly doesn't exist to trigger the 404 logic
 
         //Assert
-        String response = fakeOutput.toString();//Converts the captured byte stream into a String for verification
+        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
 
         assertTrue(response.contains("HTTP/1.1 " + SC_NOT_FOUND + " Not Found")); // Assert the status
 
@@ -87,13 +91,15 @@ class StaticFileHandlerTest {
         Path webRoot = tempDir.resolve("www");
         Files.createDirectories(webRoot);
         StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
-        ByteArrayOutputStream fakeOutput = new ByteArrayOutputStream();
+
+        HttpRequest request = new HttpRequest("GET", "../secret.txt", "HTTP/1.1", Collections.emptyMap(), "");
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
 
         // Act
-        handler.sendGetRequest(fakeOutput, "../secret.txt");
+        handler.handle(request, responseBuilder);
 
         // Assert
-        String response = fakeOutput.toString();
+        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
         assertFalse(response.contains("TOP SECRET"));
         assertTrue(response.contains("HTTP/1.1 " + SC_FORBIDDEN + " Forbidden"));
     }
@@ -110,13 +116,15 @@ class StaticFileHandlerTest {
         Files.createDirectories(webRoot);
         Files.writeString(webRoot.resolve("index.html"), "Hello");
         StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        HttpRequest request = new HttpRequest("GET", uri, "HTTP/1.1", Collections.emptyMap(), "");
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
 
         // Act
-        handler.sendGetRequest(out, uri);
+        handler.handle(request, responseBuilder);
 
         // Assert
-        assertTrue(out.toString().contains("HTTP/1.1 " + SC_OK + " OK"));
+        assertTrue(new String(responseBuilder.build(), StandardCharsets.UTF_8).contains("HTTP/1.1 " + SC_OK + " OK"));
     }
 
     @Test
@@ -125,13 +133,15 @@ class StaticFileHandlerTest {
         Path webRoot = tempDir.resolve("www");
         Files.createDirectories(webRoot);
         StaticFileHandler handler = new StaticFileHandler(webRoot.toString());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        HttpRequest request = new HttpRequest("GET", "index.html\0../../etc/passwd", "HTTP/1.1", Collections.emptyMap(), "");
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
 
         // Act
-        handler.sendGetRequest(out, "index.html\0../../etc/passwd");
+        handler.handle(request, responseBuilder);
 
         // Assert
-        String response = out.toString();
+        String response = new String(responseBuilder.build(), StandardCharsets.UTF_8);
         assertFalse(response.contains("HTTP/1.1 " + SC_OK + " OK"));
         assertTrue(response.contains("HTTP/1.1 " + SC_NOT_FOUND +  " Not Found"));
     }

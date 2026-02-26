@@ -26,6 +26,7 @@ public class HttpResponseBuilder {
     public static final int SC_UNAUTHORIZED = 401;
     public static final int SC_FORBIDDEN = 403;
     public static final int SC_NOT_FOUND = 404;
+    public static final int SC_METHOD_NOT_ALLOWED = 405;
 
     // SERVER ERROR
     public static final int SC_INTERNAL_SERVER_ERROR = 500;
@@ -162,5 +163,9 @@ public class HttpResponseBuilder {
     public byte[] getByteBody() {
 
         return bytebody == null ? null : Arrays.copyOf(bytebody, bytebody.length);
+    }
+
+    public void setContentType(String contentType) {
+        setHeader("Content-Type", contentType);
     }
 }

@@ -2,14 +2,13 @@ package org.example.server;
 
 import org.example.filter.Filter;
 import org.example.filter.FilterChainImpl;
-import org.example.httpparser.HttpRequest;
 import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 public class ConfigurableFilterPipeline {
 
@@ -22,7 +21,7 @@ public class ConfigurableFilterPipeline {
     }
 
     public HttpResponseBuilder execute(HttpRequest request,
-                                       BiConsumer<HttpRequest, HttpResponseBuilder> terminalHandler) {
+                                       TerminalHandler terminalHandler) {
 
         Objects.requireNonNull(request, "request must not be null");
         Objects.requireNonNull(terminalHandler, "terminalHandler must not be null");

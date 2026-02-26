@@ -1,18 +1,18 @@
 package org.example;
 
 import org.example.config.AppConfig;
-import org.example.filter.IpFilter;
-import org.example.httpparser.HttpParser;
-import org.example.httpparser.HttpRequest;
-import java.util.ArrayList;
-import java.util.List;
+import org.example.config.ConfigLoader;
 import org.example.filter.Filter;
 import org.example.filter.FilterChainImpl;
+import org.example.filter.IpFilter;
 import org.example.http.HttpResponseBuilder;
-import org.example.config.ConfigLoader;
+import org.example.httpparser.HttpParser;
+import org.example.httpparser.HttpRequest;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConnectionHandler implements AutoCloseable {
 
@@ -69,36 +69,13 @@ public class ConnectionHandler implements AutoCloseable {
         String clientIp = client.getInetAddress().getHostAddress();
         request.setAttribute("clientIp", clientIp);
 
-        HttpResponseBuilder response = applyFilters(request);
-
-        int statusCode = response.getStatusCode();
-        if (statusCode == HttpResponseBuilder.SC_FORBIDDEN ||
-                statusCode == HttpResponseBuilder.SC_BAD_REQUEST) {
-            byte[] responseBytes = response.build();
-            client.getOutputStream().write(responseBytes);
-            client.getOutputStream().flush();
-            return;
-        }
-
-        resolveTargetFile(parser.getUri());
-        sfh.sendGetRequest(client.getOutputStream(), uri);
-    }
-
-    private HttpResponseBuilder applyFilters(HttpRequest request) {
         HttpResponseBuilder response = new HttpResponseBuilder();
 
-        FilterChainImpl chain = new FilterChainImpl(filters);
+        FilterChainImpl chain = new FilterChainImpl(filters, sfh);
         chain.doFilter(request, response);
 
-        return response;
-    }
-
-    private void resolveTargetFile(String uri) {
-        if (uri == null || "/".equals(uri)) {
-            this.uri = "index.html";
-        } else {
-            this.uri = uri.startsWith("/") ? uri.substring(1) : uri;
-        }
+        client.getOutputStream().write(response.build());
+        client.getOutputStream().flush();
     }
 
     @Override
