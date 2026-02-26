@@ -30,6 +30,7 @@ public class CachingFilter implements Filter {
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
 
         String path = request.getPath();
+        HttpCachingHeaders cachingHeaders = new HttpCachingHeaders();
 
         if (path.equals("/")) {
             path = "index.html";
@@ -44,6 +45,7 @@ public class CachingFilter implements Filter {
 
         if(!file.exists()){
             response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
+
             return;
         }
 
@@ -58,9 +60,9 @@ public class CachingFilter implements Filter {
 
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
             response.setStatusCode(HttpResponseBuilder.SC_NOT_MODIFIED);
+            cachingHeaders.getHeaders().forEach(response::addHeader);
             return;
         }
-
 
         if (modifiedSince != null) {
             try {
@@ -69,6 +71,7 @@ public class CachingFilter implements Filter {
 
                 if (!lastModified.isAfter(ifModifiedSinceInstant)) {
                     response.setStatusCode(HttpResponseBuilder.SC_NOT_MODIFIED);
+                    cachingHeaders.getHeaders().forEach(response::addHeader);
                     return;
                 }
 
@@ -77,17 +80,16 @@ public class CachingFilter implements Filter {
             }
         }
 
-        chain.doFilter(request, response);
 
-        HttpCachingHeaders cachingHeaders = new HttpCachingHeaders();
+
+
         cachingHeaders.addETagHeader(eTag);
         cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
         cachingHeaders.setDefaultCacheControlStatic();
 
+        chain.doFilter(request, response);
+        cachingHeaders.getHeaders().forEach(response::addHeader);
 
-        response.addHeader("ETag", eTag);
-        response.addHeader("Last-Modified", DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified.atZone(java.time.ZoneOffset.UTC)));
-        response.addHeader("Cache-Control", "public, max-age=3600");
 
     }
 
