@@ -68,7 +68,7 @@ public class CompressionFilter implements Filter {
         }
 
         String acceptEncoding = getHeader(request, "Accept-Encoding");
-        if (acceptEncoding == null || !acceptEncoding.toLowerCase().contains("gzip")) {
+        if (acceptEncoding == null) {
             return;
         }
 
@@ -82,23 +82,50 @@ public class CompressionFilter implements Filter {
             return;
         }
 
+        String acceptLower = acceptEncoding.toLowerCase();
+
+        if (acceptLower.contains("br")) {
+            if (tryBrotliCompression(response, originalBody)) {
+                return;
+            }
+        }
+
+        if (acceptLower.contains("gzip")) {
+            tryGzipCompression(response, originalBody);
+        }
+    }
+    private boolean tryBrotliCompression(HttpResponseBuilder response, byte[] originalBody) {
+        try {
+            byte[] compressed = brotliCompress(originalBody);
+
+            response.setBody(compressed);
+            response.setHeader("Content-Encoding", "br");
+            updateVaryHeader(response);
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+    private void tryGzipCompression(HttpResponseBuilder response, byte[] originalBody) {
         try {
             byte[] compressed = gzipCompress(originalBody);
 
             response.setBody(compressed);
             response.setHeader("Content-Encoding", "gzip");
-
-            String existingVary = response.getHeader("Vary");
-            if (existingVary != null && !existingVary.isEmpty()) {
-                if (!existingVary.toLowerCase().contains("accept-encoding")) {
-                    response.setHeader("Vary", existingVary + ", Accept-Encoding");
-                }
-            } else {
-                response.setHeader("Vary", "Accept-Encoding");
-            }
+            updateVaryHeader(response);
 
         } catch (IOException e) {
-            System.err.println("CompressionFilter: gzip compression failed: " + e.getMessage());
+        }
+    }
+    private void updateVaryHeader(HttpResponseBuilder response) {
+        String existingVary = response.getHeader("Vary");
+        if (existingVary != null && !existingVary.isEmpty()) {
+            if (!existingVary.toLowerCase().contains("accept-encoding")) {
+                response.setHeader("Vary", existingVary + ", Accept-Encoding");
+            }
+        } else {
+            response.setHeader("Vary", "Accept-Encoding");
         }
     }
 
