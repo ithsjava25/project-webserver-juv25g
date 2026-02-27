@@ -1,13 +1,11 @@
-package org.example.http;
+package org.example.filter;
 
-import org.example.config.AppConfig;
 import org.example.config.ConfigLoader;
-import org.example.filter.Filter;
-import org.example.filter.FilterChain;
+import org.example.http.HttpCachingHeaders;
+import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 
 import java.io.File;
-import java.io.ObjectInputFilter;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -57,6 +55,10 @@ public class CachingFilter implements Filter {
 
         String ifNoneMatch = headers.get("If-None-Match");
 
+        cachingHeaders.addETagHeader(eTag);
+        cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
+        cachingHeaders.setDefaultCacheControlStatic();
+
 
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
             response.setStatusCode(HttpResponseBuilder.SC_NOT_MODIFIED);
@@ -80,13 +82,6 @@ public class CachingFilter implements Filter {
             }
         }
 
-
-
-
-        cachingHeaders.addETagHeader(eTag);
-        cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
-        cachingHeaders.setDefaultCacheControlStatic();
-
         chain.doFilter(request, response);
         cachingHeaders.getHeaders().forEach(response::addHeader);
 
@@ -98,5 +93,4 @@ public class CachingFilter implements Filter {
 
     }
 }
-
 

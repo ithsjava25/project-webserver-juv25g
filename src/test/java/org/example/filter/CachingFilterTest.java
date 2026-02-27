@@ -1,10 +1,15 @@
-package org.example.http;
+package org.example.filter;
 
+import org.example.config.ConfigLoader;
+import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 /// //
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -12,11 +17,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class CachingFilterTest {
 
 
+    @BeforeEach
+    void setup() {
+        Path configPath = Paths.get("src/test/resources/test-config.yml");
+        ConfigLoader.loadOnce(configPath);
+
+    }
 
     @Test
     void shouldReturn404WhenFileDoesNotExist() {
 
         CachingFilter cachingFilter = new CachingFilter();
+
 
         HttpRequest request = new HttpRequest(
                 "GET",

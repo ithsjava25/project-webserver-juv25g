@@ -1,6 +1,6 @@
-package org.example.http;
+package org.example.filter;
 
-import org.example.filter.FilterChain;
+import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 /// /
 class TestFilterChain implements FilterChain {
