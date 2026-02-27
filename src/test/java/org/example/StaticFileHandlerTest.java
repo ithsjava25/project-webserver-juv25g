@@ -155,5 +155,6 @@ class StaticFileHandlerTest {
 
         assertEquals(SC_METHOD_NOT_ALLOWED, responseBuilder.getStatusCode());
         assertEquals("text/plain; charset=utf-8", responseBuilder.getHeader("Content-Type"));
+        assertEquals("GET", responseBuilder.getHeader("Allow"));
     }
 }
