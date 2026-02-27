@@ -89,7 +89,6 @@ public record AppConfig(
             @JsonProperty("maxBytes") Long maxBytes
     ) {
         public static MaxRequestBodyConfig defaults() {
-            // välj en rimlig default för skolprojekt: 1 MiB
             return new MaxRequestBodyConfig(false, 1_048_576L);
         }
 

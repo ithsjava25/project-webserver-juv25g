@@ -10,3 +10,7 @@ ipFilter:
   mode: "BLOCKLIST"
   blockedIps: [ ]
   allowedIps: [ ]
+
+maxRequestBody:
+  enabled: true
+  maxBytes: 1048576
