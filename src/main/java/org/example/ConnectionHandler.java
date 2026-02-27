@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.config.AppConfig;
 import org.example.filter.IpFilter;
+import org.example.filter.MaxRequestBodySizeFilter;
 import org.example.httpparser.HttpParser;
 import org.example.httpparser.HttpRequest;
 import java.util.ArrayList;
@@ -39,6 +40,10 @@ public class ConnectionHandler implements AutoCloseable {
         AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
         if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
             list.add(createIpFilterFromConfig(ipFilterConfig));
+        }
+        AppConfig.MaxRequestBodyConfig maxBodyConfig = config.maxRequestBody();
+        if (Boolean.TRUE.equals(maxBodyConfig.enabled())) {
+            list.add(new MaxRequestBodySizeFilter(maxBodyConfig.maxBytes()));
         }
         // Add more filters here...
         return list;
