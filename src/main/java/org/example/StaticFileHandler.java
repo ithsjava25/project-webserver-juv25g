@@ -29,6 +29,7 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
             fileBytes = "405 Method Not Allowed".getBytes(java.nio.charset.StandardCharsets.UTF_8);
             response.setContentType(TEXT_PLAIN_CHARSET_UTF_8);
             response.setStatusCode(SC_METHOD_NOT_ALLOWED);
+            response.setHeader("Allow", "GET");
             response.setBody(fileBytes);
             return;
         }
