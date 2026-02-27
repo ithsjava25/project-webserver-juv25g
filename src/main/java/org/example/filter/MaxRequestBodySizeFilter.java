@@ -91,5 +91,7 @@ public class MaxRequestBodySizeFilter implements Filter {
     }
 
     private void reject(HttpResponseBuilder response, Long contentLength) {
+        response.setStatusCode(HttpResponseBuilder.SC_PAYLOAD_TOO_LARGE);
+        response.setBody("Payload too large: " + contentLength + "bytes (max " + maxBytes + ")");
     }
 }
