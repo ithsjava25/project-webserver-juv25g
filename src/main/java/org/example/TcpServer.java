@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Map;
 
 public class TcpServer {
@@ -20,18 +21,35 @@ public class TcpServer {
 
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            while (!Thread.currentThread().isInterrupted()) {
-                Socket clientSocket = serverSocket.accept();
+            //  Tillåt avbrott genom timeout
+            serverSocket.setSoTimeout(1000);
 
-                try {
-                    clientSocket.setSoTimeout(10000);
-                    Thread.ofVirtual().start(() -> handleClient(clientSocket));
-                } catch (Exception _) {
-                    closeQuietly(clientSocket);
-                }
+            while (!Thread.currentThread().isInterrupted()) {
+                acceptAndHandleClient(serverSocket);
             }
         } catch (IOException e) {
             throw new IllegalStateException("TCP Server failed on port " + port, e);
+        }
+    }
+
+    private void acceptAndHandleClient(ServerSocket serverSocket) {
+        try {
+            Socket clientSocket = serverSocket.accept();
+            startClientTask(clientSocket);
+        } catch (SocketTimeoutException _) {
+            // Normal timeout för att checka interrupt-flaggan
+        } catch (IOException _) {
+            // Will be logged with when new system is integrated
+        }
+    }
+
+    private void startClientTask(Socket clientSocket) {
+        try {
+            clientSocket.setSoTimeout(10000);
+            Thread.ofVirtual().start(() -> handleClient(clientSocket));
+        } catch (Exception _) {
+            // Om tråden inte kan startas, stäng socketen direkt
+            closeQuietly(clientSocket);
         }
     }
 
@@ -39,7 +57,7 @@ public class TcpServer {
         try (client) {
             processRequest(client);
         } catch (Exception _) {
-            // Ska fyllas in med nya pr
+            // Plats för framtida loggning
         }
     }
 
@@ -51,18 +69,12 @@ public class TcpServer {
         } catch (Exception _) {
             handleInternalServerError(client);
         } finally {
-            if (handler != null) {
-                try {
-                    handler.close();
-                } catch (Exception _) {
-                    // ska fyllas in med nya PR
-                }
-            }
+            closeHandler(handler);
         }
     }
 
     private void handleInternalServerError(Socket client) {
-        // Kontrollera att vi kan skriva till klienten
+        // Fix för CodeRabbit: Dubbelkolla att output inte är stängd
         if (client.isClosed() || !client.isConnected() || client.isOutputShutdown()) {
             return;
         }
@@ -77,7 +89,17 @@ public class TcpServer {
             out.write(response.build());
             out.flush();
         } catch (IOException _) {
-            // Ignorera nätverksfel vid sändning av felmeddelandet
+            // Plats för framtida loggning
+        }
+    }
+
+    private void closeHandler(ConnectionHandler handler) {
+        if (handler != null) {
+            try {
+                handler.close();
+            } catch (Exception _) {
+                // Tyst stängning av handler
+            }
         }
     }
 
@@ -86,7 +108,7 @@ public class TcpServer {
             try {
                 socket.close();
             } catch (IOException _) {
-                // Tyst stängning
+                // Tyst stängning av socket
             }
         }
     }
