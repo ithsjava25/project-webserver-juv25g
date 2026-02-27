@@ -27,7 +27,7 @@ public class TcpServer {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept(); // block
-                log.info("Client connected: {}", clientSocket.getRemoteSocketAddress());
+                log.info("Client connected");
                 Thread.ofVirtual().start(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
@@ -39,16 +39,22 @@ public class TcpServer {
         try(client){
             processRequest(client);
         } catch (Exception e) {
-            log.error("Failed to close socket", e);
+            log.error("Failed when handling connection to client", e);
         }
     }
 
+    /*
+    The connection handler must be run in a try-with-resources. Otherwise - if we use try-with - the
+    connection will always be closed when code reaches handleInternalServerError() and there will never
+    be an error print on the client's webpage.
+     */
     private void processRequest(Socket client) throws Exception {
         ConnectionHandler handler = null;
         try{
             handler = connectionFactory.create(client);
             handler.runConnectionHandler();
         } catch (Exception e) {
+            log.error("Internal Server Error", e);
             handleInternalServerError(client);
         } finally {
             if(handler != null)
@@ -69,7 +75,7 @@ public class TcpServer {
                 out.write(response.build());
                 out.flush();
             } catch (IOException e) {
-                log.error("Failed to send 500 response", e);
+                log.error("Client disconnected before 500 response could be sent", e);
             }
         }
     }
