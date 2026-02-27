@@ -60,6 +60,11 @@ public class MaxRequestBodySizeFilter implements Filter {
     }
 
     private boolean mayHaveBody(String method) {
+        if (method == null) {
+            return false;
+        }
+        String m = method.trim().toUpperCase();
+        return m.equals("POST") || m.equals("PUT") || m.equals("PATCH");
     }
 
     private Long getHeaderAsLong(Map<String, String> headers, String s) {
