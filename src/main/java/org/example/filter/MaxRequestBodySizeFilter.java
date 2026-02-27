@@ -45,9 +45,9 @@ public class MaxRequestBodySizeFilter implements Filter {
         // fallback: if a body has already been parsed, validate it as well
         String body = request.getBody();
         if (body != null && !body.isEmpty()) {
-            int bodyBytes = body.getBytes(StandardCharsets.UTF_8).length;
-            if (bodyBytes > maxBytes) {
-                reject(response, (long) bodyBytes);
+            int bodySizeInBytes = body.getBytes(StandardCharsets.UTF_8).length;
+            if (bodySizeInBytes > maxBytes) {
+                reject(response, (long) bodySizeInBytes);
                 return;
             }
         }
@@ -63,11 +63,31 @@ public class MaxRequestBodySizeFilter implements Filter {
         if (method == null) {
             return false;
         }
-        String m = method.trim().toUpperCase();
-        return m.equals("POST") || m.equals("PUT") || m.equals("PATCH");
+        String normalizedMethod = method.trim().toUpperCase();
+        return normalizedMethod.equals("POST") || normalizedMethod.equals("PUT") || normalizedMethod.equals("PATCH");
     }
 
-    private Long getHeaderAsLong(Map<String, String> headers, String s) {
+    private Long getHeaderAsLong(Map<String, String> headers, String headerName) {
+        if (headers == null || headerName == null) {
+            return null;
+        }
+        String rawHeaderValue = null;
+        for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
+            String currentHeaderName = headerEntry.getKey().toUpperCase();
+            if (currentHeaderName.equalsIgnoreCase(headerName)) {
+                rawHeaderValue = headerEntry.getValue();
+                break;
+            }
+        }
+        if (rawHeaderValue == null) {
+            return null;
+        }
+        try {
+            long parsedContentLength = Long.parseLong(rawHeaderValue.trim());
+            return parsedContentLength < 0 ? null : parsedContentLength;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private void reject(HttpResponseBuilder response, Long contentLength) {
