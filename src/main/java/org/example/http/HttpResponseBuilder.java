@@ -1,6 +1,8 @@
 package org.example.http;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -77,7 +79,7 @@ public class HttpResponseBuilder {
     }
 
     public void setBody(byte[] body) {
-        this.bytebody = body;
+        this.bytebody = body == null ? null : Arrays.copyOf(body, body.length);
         this.body = "";
     }
 
@@ -88,6 +90,14 @@ public class HttpResponseBuilder {
 
     public void setHeader(String name, String value) {
         this.headers.put(name, value);
+    }
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public byte[] getBodyBytes() {
+        if (bytebody != null) return bytebody;
+        return body.getBytes(StandardCharsets.UTF_8);
     }
 
     public void setContentTypeFromFilename(String filename) {
@@ -139,5 +149,20 @@ public class HttpResponseBuilder {
         System.arraycopy(contentBody, 0, response, headerBytes.length, contentBody.length);
 
         return response;
+    }
+
+    public Map<String, String> getHeaders() {
+        TreeMap<String, String> copy = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        copy.putAll(headers);
+        return Collections.unmodifiableMap(copy);
+    }
+
+    public String getBody(){
+        return body;
+    }
+
+    public byte[] getByteBody() {
+
+        return bytebody == null ? null : Arrays.copyOf(bytebody, bytebody.length);
     }
 }

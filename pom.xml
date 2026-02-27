@@ -65,6 +65,11 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>3.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.aayushatharva.brotli4j</groupId>
+            <artifactId>brotli4j</artifactId>
+            <version>1.20.0</version>
+        </dependency>
 
     </dependencies>
     <build>
