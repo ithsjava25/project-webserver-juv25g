@@ -73,7 +73,8 @@ public class ConnectionHandler implements AutoCloseable {
 
         int statusCode = response.getStatusCode();
         if (statusCode == HttpResponseBuilder.SC_FORBIDDEN ||
-                statusCode == HttpResponseBuilder.SC_BAD_REQUEST) {
+                statusCode == HttpResponseBuilder.SC_BAD_REQUEST ||
+                statusCode == HttpResponseBuilder.SC_PAYLOAD_TOO_LARGE) {
             byte[] responseBytes = response.build();
             client.getOutputStream().write(responseBytes);
             client.getOutputStream().flush();
