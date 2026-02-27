@@ -68,7 +68,7 @@ public class ConnectionHandler implements AutoCloseable {
                 parser.getUri(),
                 parser.getVersion(),
                 parser.getHeadersMap(),
-                ""
+                null
         );
 
         String clientIp = client.getInetAddress().getHostAddress();
