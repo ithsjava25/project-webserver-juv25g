@@ -17,7 +17,7 @@ public class MaxRequestBodySizeFilter implements Filter {
     private final long maxBytes;
 
     public MaxRequestBodySizeFilter(long maxBytes) {
-        if (maxBytes <= 0) {
+        if (maxBytes < 0) {
             throw new IllegalArgumentException("maxBytes must be >= 0");
         }
         this.maxBytes = maxBytes;
@@ -73,7 +73,7 @@ public class MaxRequestBodySizeFilter implements Filter {
         }
         String rawHeaderValue = null;
         for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
-            String currentHeaderName = headerEntry.getKey().toUpperCase();
+            String currentHeaderName = headerEntry.getKey();
             if (currentHeaderName.equalsIgnoreCase(headerName)) {
                 rawHeaderValue = headerEntry.getValue();
                 break;
