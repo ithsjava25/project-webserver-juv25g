@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -17,6 +16,7 @@ class FilterChainImplTest {
     @Test
     void calls_terminal_handler_when_no_filters() {
         //Arrange
+        //Mock a chain without filters
         TerminalHandler handler = mock(TerminalHandler.class);
         FilterChainImpl chain = new FilterChainImpl(List.of(), handler);
 
@@ -35,7 +35,7 @@ class FilterChainImplTest {
     void calls_filters_then_terminal_handler_in_order() {
         //Arrange
 
-        // We create mocks for our filters and our TerminalHandler.
+        // create mocks for our filters and our TerminalHandler.
         // This allows us to track exactly when and in what order they are called.
         Filter filter1 = mock(Filter.class);
         Filter filter2 = mock(Filter.class);
@@ -46,7 +46,7 @@ class FilterChainImplTest {
          * the chain will stop dead at the first filter.
          */
         doAnswer(invocation -> {
-            // Here we simulate Filter 1 performing its check and then forwarding the request.
+            // simulate Filter 1 performing its check and then forwarding the request.
             HttpRequest req = invocation.getArgument(0);
             HttpResponseBuilder resp = invocation.getArgument(1);
             FilterChain chain = invocation.getArgument(2);
@@ -86,6 +86,25 @@ class FilterChainImplTest {
         inOrder.verify(handler, times(1)).handle(any(), any());
 
         inOrder.verifyNoMoreInteractions();
+    }
+
+    @Test
+    void does_not_call_terminal_handler_if_filter_stops_chain() {
+        //Arrange
+        Filter blockingFilter = mock(Filter.class); //Silent by default, needed to stop the chain
+        TerminalHandler terminalHandler = mock(TerminalHandler.class);
+
+        FilterChainImpl chain = new FilterChainImpl(List.of(blockingFilter), terminalHandler);
+        HttpRequest request = new HttpRequest("GET", "index.html", "HTTP/1.1", Map.of(), "");
+        HttpResponseBuilder response = new HttpResponseBuilder();
+
+        //Act
+        chain.doFilter(request, response);
+
+        //Assert
+        // verify that the filter was reached, and check that the terminal handler never got reached
+        verify(blockingFilter).doFilter(any(), any(), any());
+        verifyNoInteractions(terminalHandler);
     }
 
 }
