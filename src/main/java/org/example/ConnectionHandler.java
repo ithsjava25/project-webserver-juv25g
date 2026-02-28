@@ -20,7 +20,7 @@ public class ConnectionHandler implements AutoCloseable {
     Socket client;
     String uri;
     private final List<Filter> filters;
-    private HttpRequest request;
+
 
 
     public ConnectionHandler(Socket client) {

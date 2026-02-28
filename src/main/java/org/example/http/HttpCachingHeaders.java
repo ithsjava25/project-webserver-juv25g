@@ -49,7 +49,7 @@ public class HttpCachingHeaders {
      * are added automatically to comply with RFC 7232.
      */
     public void addETagHeader(String etag) {
-        setHeader(ETAG, etag);
+        setHeader(ETAG, "\"" + etag + "\"");
     }
 
     /**

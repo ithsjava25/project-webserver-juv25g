@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -21,11 +22,15 @@ public class CachingFilterTest {
     }
 
     @Test
-    void shouldContinueChainWhenNoCacheHit() {
+    void shouldContinueChainWhenNoCacheHit() throws IOException {
 
         CachingFilter cachingFilter = new CachingFilter();
 
-        String resolvedPath = FileResolver.resolvePath("/does-not-exist");
+        File file = new File("www/ok.txt");
+        file.getParentFile().mkdirs();
+        Files.writeString(file.toPath(), "hello");
+
+        String resolvedPath = FileResolver.resolvePath("/ok.txt");
 
         HttpRequest request = new HttpRequest(
                 "GET",

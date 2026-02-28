@@ -33,9 +33,8 @@ public class CachingFilter implements Filter {
 
         HttpCachingHeaders cachingHeaders = new HttpCachingHeaders();
 
-        String rootDir = request.getResolvedPath();
-        String path = request.getResolvedPath();
-        File file = new File(rootDir, path);
+        String resolvedPath = request.getResolvedPath();
+        File file = new File(resolvedPath);
 
 
 
@@ -46,6 +45,10 @@ public class CachingFilter implements Filter {
         Instant lastModified = Instant.ofEpochMilli(file.lastModified());
 
         String ifNoneMatch = headers.get("If-None-Match");
+
+        cachingHeaders.addETagHeader(eTag);
+        cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
+        cachingHeaders.setDefaultCacheControlStatic();
 
 
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
@@ -67,15 +70,16 @@ public class CachingFilter implements Filter {
 
             } catch (Exception e) {
 
+                // Ignore malformed If-Modified-Since header; proceed without cache validation
+                // Consider logging: log.debug("Invalid If-Modified-Since header: {}", modifiedSince, e);
             }
+
         }
 
 
 
 
-        cachingHeaders.addETagHeader(eTag);
-        cachingHeaders.setLastModified(Instant.ofEpochMilli(file.lastModified()));
-        cachingHeaders.setDefaultCacheControlStatic();
+
 
         chain.doFilter(request, response);
         cachingHeaders.getHeaders().forEach(response::addHeader);

@@ -19,6 +19,9 @@ public class FileResolver {
      */
 
     public static String resolvePath(String requestPath) {
+        if (requestPath == null || requestPath.isEmpty()) {
+            requestPath = "/";
+        }
         String path = requestPath.equals("/") ? "index.html" : requestPath.substring(1);
         String rootDir = ConfigLoader.get().server().rootDir();
 
