@@ -14,11 +14,14 @@ import org.example.config.ConfigLoader;
 import java.io.IOException;
 import java.net.Socket;
 
+
 public class ConnectionHandler implements AutoCloseable {
 
     Socket client;
     String uri;
     private final List<Filter> filters;
+    private HttpRequest request;
+
 
     public ConnectionHandler(Socket client) {
         this.client = client;
@@ -37,17 +40,24 @@ private List<Filter> buildFilters() {
 
 
     public void runConnectionHandler() throws IOException {
+
+
         HttpParser parser = new HttpParser();
+
         parser.setReader(client.getInputStream());
         parser.parseRequest();
         parser.parseHttp();
+
+        String resolvedPath = FileResolver.resolvePath(parser.getUri());
 
         HttpRequest request = new HttpRequest(
                 parser.getMethod(),
                 parser.getUri(),
                 parser.getVersion(),
                 parser.getHeadersMap(),
-                ""
+                "",
+                resolvedPath
+
         );
 
         String clientIp = client.getInetAddress().getHostAddress();

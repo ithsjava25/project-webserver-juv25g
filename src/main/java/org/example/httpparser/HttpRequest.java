@@ -18,21 +18,23 @@ public class HttpRequest {
         private final String version;
         private final Map<String, String> headers;
         private final String body;
+        private final String resolvedPath;
 
-
-        private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
 
         public HttpRequest(String method,
                            String path,
                            String version,
                            Map<String, String> headers,
-                           String body) {
+                           String body,
+                           String resolvedPath) {
             this.method = method;
             this.path = path;
             this.version = version;
             this.headers = headers != null ? Map.copyOf(headers) : Collections.emptyMap();
             this.body = body;
+            this.resolvedPath = resolvedPath;
         }
 
         public String getMethod() {
@@ -45,6 +47,8 @@ public class HttpRequest {
             return headers; }
         public String getBody() {
             return body; }
+        public String getResolvedPath() {
+        return resolvedPath; }
 
 
         public void setAttribute(String key, Object value) {

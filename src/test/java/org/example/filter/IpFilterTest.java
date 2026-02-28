@@ -1,11 +1,14 @@
 package org.example.filter;
 
+import org.example.FileResolver;
+import org.example.config.ConfigLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  */
 class IpFilterTest {
 
+
     private IpFilter ipFilter;
     private HttpResponseBuilder response;
     private FilterChain mockChain;
@@ -29,6 +33,7 @@ class IpFilterTest {
         response = new HttpResponseBuilder();
         chainCalled = false;
         mockChain = (req, resp) -> chainCalled = true;
+        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
     }
 
     @Test
@@ -106,12 +111,16 @@ class IpFilterTest {
     @Test
     void testMissingClientIp_Returns400() {
         // ARRANGE
+        String resolvedPath = FileResolver.resolvePath("/does-not-exist");
+
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 Collections.emptyMap(),
-                ""
+                "",
+                resolvedPath
+
         );
 
         // ACT
@@ -127,12 +136,15 @@ class IpFilterTest {
     }
 
     private HttpRequest createRequestWithIp(String ip) {
+
+        String resolvedPath = FileResolver.resolvePath("/does-not-exist");
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 Collections.emptyMap(),
-                ""
+                "",
+                resolvedPath
         );
         request.setAttribute("clientIp", ip);
         return request;

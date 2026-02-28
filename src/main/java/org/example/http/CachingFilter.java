@@ -1,5 +1,6 @@
 package org.example.http;
 
+
 import org.example.config.AppConfig;
 import org.example.config.ConfigLoader;
 import org.example.filter.Filter;
@@ -29,25 +30,14 @@ public class CachingFilter implements Filter {
     @Override
     public void doFilter(HttpRequest request, HttpResponseBuilder response, FilterChain chain) {
 
-        String path = request.getPath();
+
         HttpCachingHeaders cachingHeaders = new HttpCachingHeaders();
 
-        if (path.equals("/")) {
-            path = "index.html";
-        } else {
-            path = path.substring(1);
-        }
-
-        // Ingen mer hårtkodat utan sökväg från ConfigLoader
-        String rootDir = ConfigLoader.get().server().rootDir();
+        String rootDir = request.getResolvedPath();
+        String path = request.getResolvedPath();
         File file = new File(rootDir, path);
 
 
-        if(!file.exists()){
-            response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
-
-            return;
-        }
 
         Map<String, String> headers = request.getHeaders();
 

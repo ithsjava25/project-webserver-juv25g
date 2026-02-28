@@ -1,6 +1,10 @@
 package org.example;
 
+import org.example.config.ConfigLoader;
+import org.example.filter.FilterChain;
 import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
+
 import static org.example.http.HttpResponseBuilder.*;
 
 import java.io.File;
@@ -35,6 +39,7 @@ public class StaticFileHandler {
         // Path traversal check
         File root = new File(WEB_ROOT).getCanonicalFile();
         File file = new File(root, uri).getCanonicalFile();
+
         if (!file.toPath().startsWith(root.toPath())) {
             fileBytes = "403 Forbidden".getBytes(java.nio.charset.StandardCharsets.UTF_8);
             statusCode = SC_FORBIDDEN;
@@ -54,6 +59,33 @@ public class StaticFileHandler {
             }
             statusCode = SC_NOT_FOUND;
         }
+    }
+
+    public void handle(HttpRequest request, HttpResponseBuilder response, FilterChain chain) throws IOException {
+
+        String rootDir = ConfigLoader.get().server().rootDir();
+        request.getResolvedPath();
+        File file = new File(rootDir, request.getResolvedPath());
+
+
+        if (file.isFile()) {
+            fileBytes = Files.readAllBytes(file.toPath());
+            response.setBody(fileBytes);
+            statusCode = SC_OK;
+        }
+        else {
+            response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
+            response.setBody(fileBytes);
+
+            File errorFile = new File(WEB_ROOT, "pageNotFound.html");
+            if (errorFile.exists()) {
+                response.setBody(Files.readAllBytes(errorFile.toPath()));
+            } else {
+                response.setBody("404 Not Found".getBytes());
+            }
+
+        }
+
     }
 
     public void sendGetRequest(OutputStream outputStream, String uri) throws IOException {

@@ -1,46 +1,56 @@
 package org.example.http;
 
+import org.example.FileResolver;
+import org.example.config.ConfigLoader;
 import org.example.httpparser.HttpRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 /// //
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class CachingFilterTest {
 
-
+    @BeforeEach
+    void setup() {
+        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
+    }
 
     @Test
-    void shouldReturn404WhenFileDoesNotExist() {
+    void shouldContinueChainWhenNoCacheHit() {
 
         CachingFilter cachingFilter = new CachingFilter();
+
+        String resolvedPath = FileResolver.resolvePath("/does-not-exist");
 
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/does-not-exist",
                 "HTTP/1.1",
                 Map.of(),
-                null
-        );
+                null,
+                resolvedPath
 
+        );
         HttpResponseBuilder response = new HttpResponseBuilder();
 
         TestFilterChain chain = new TestFilterChain();
 
         cachingFilter.doFilter(request, response, chain);
 
-        assertThat(response.getStatusCode()).isEqualTo(404);
-        assertThat(chain.called).isFalse();
+        assertThat(chain.called).isTrue();
     }
-
 
     @Test
     void shouldContinueChainWhenNoCachingHeaders() throws Exception {
 
         CachingFilter cachingFilter = new CachingFilter();
+
+        String resolvedPath = FileResolver.resolvePath("/does-not-exist");
 
         File file = new File("www/ok.txt");
         file.getParentFile().mkdirs();
@@ -51,7 +61,8 @@ public class CachingFilterTest {
                 "/ok.txt",
                 "HTTP/1.1",
                 Map.of(),
-                null
+                null,
+                resolvedPath
         );
 
         HttpResponseBuilder response = new HttpResponseBuilder();
