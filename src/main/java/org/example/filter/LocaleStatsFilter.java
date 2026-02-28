@@ -9,18 +9,18 @@ import java.util.Map;
  * <p>
  * Usage for debugging and inspection:
  * 1) Make sure LocaleFilterWithCookie and LocaleStatsFilter are integrated
- *    in the ConnectionHandler filter chain.
+ * in the ConnectionHandler filter chain.
  * 2) Set a breakpoint on the line:
- *       localeCounts.merge(locale, 1, Integer::sum);
+ * localeCounts.merge(locale, 1, Integer::sum);
  * 3) Start the application in debug mode and open a browser to connect to
- *    the server.
+ * the server.
  * 4) When the breakpoint is hit, press Alt + F8 in IntelliJ to evaluate:
- *       LocaleStatsFilter.getLocaleStats()
- *    This shows the current counts of requests per locale.
+ * LocaleStatsFilter.getLocaleStats()
+ * This shows the current counts of requests per locale.
  * 5) Change the browser's preferred language or Accept-Language header,
- *    reload pages, and re-evaluate to see updated stats.
+ * reload pages, and re-evaluate to see updated stats.
  * 6) Optionally, call LocaleStatsFilter.resetStatsForTests() to clear
- *    the statistics and start fresh.
+ * the statistics and start fresh.
  * <p>
  * Thread-safety: the internal map is synchronized to allow safe updates
  * from multiple concurrent requests.
@@ -46,7 +46,6 @@ public class LocaleStatsFilter implements Filter {
 
             chain.doFilter(request, response);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
