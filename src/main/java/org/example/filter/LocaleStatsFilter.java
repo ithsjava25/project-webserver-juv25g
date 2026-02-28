@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tracks how many requests come from each client locale.
+ * Tracks how many requests come from each client locale (normalized and lowercased).
+ * Only the first 256 unique locales are tracked; additional unknown locales are ignored.
  * <p>
  * Usage for debugging and inspection:
  * 1) Make sure LocaleFilterWithCookie and LocaleStatsFilter are integrated
@@ -43,9 +44,12 @@ public class LocaleStatsFilter implements Filter {
 
         String locale = LocaleFilterWithCookie.getCurrentLocale();
         if (locale != null && !locale.isBlank()) {
-            String normalized = locale.trim();
-            if (localeCounts.containsKey(normalized) || localeCounts.size() < MAX_TRACKED_LOCALES) {
-                localeCounts.merge(normalized, 1, Integer::sum);
+            String normalized = locale.trim().toLowerCase();
+
+            synchronized (localeCounts) {
+                if (localeCounts.containsKey(normalized) || localeCounts.size() < MAX_TRACKED_LOCALES) {
+                    localeCounts.merge(normalized, 1, Integer::sum);
+                }
             }
         }
 
