@@ -39,4 +39,10 @@ public class LocaleStatsFilter implements Filter {
             return new HashMap<>(localeCounts);
         }
     }
+
+    static void resetStatsForTests() {
+        synchronized (localeCounts) {
+            localeCounts.clear();
+        }
+    }
 }
