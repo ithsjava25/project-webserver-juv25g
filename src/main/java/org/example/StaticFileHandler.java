@@ -75,7 +75,6 @@ public class StaticFileHandler {
         }
         else {
             response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
-            response.setBody(fileBytes);
 
             File errorFile = new File(WEB_ROOT, "pageNotFound.html");
             if (errorFile.exists()) {
