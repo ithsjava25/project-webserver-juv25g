@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public class LocaleStatsFilter implements Filter {
 
+    private static final int MAX_TRACKED_LOCALES = 256;
+
     private static final Map<String, Integer> localeCounts =
             Collections.synchronizedMap(new HashMap<>());
 
@@ -38,15 +40,16 @@ public class LocaleStatsFilter implements Filter {
     public void doFilter(org.example.httpparser.HttpRequest request,
                          org.example.http.HttpResponseBuilder response,
                          FilterChain chain) {
-        try {
-            String locale = LocaleFilterWithCookie.getCurrentLocale();
-            if (locale != null && !locale.isBlank()) {
-                localeCounts.merge(locale, 1, Integer::sum);
-            }
 
-            chain.doFilter(request, response);
-        } catch (Exception e) {
+        String locale = LocaleFilterWithCookie.getCurrentLocale();
+        if (locale != null && !locale.isBlank()) {
+            String normalized = locale.trim();
+            if (localeCounts.containsKey(normalized) || localeCounts.size() < MAX_TRACKED_LOCALES) {
+                localeCounts.merge(normalized, 1, Integer::sum);
+            }
         }
+
+        chain.doFilter(request, response);
     }
 
     @Override
