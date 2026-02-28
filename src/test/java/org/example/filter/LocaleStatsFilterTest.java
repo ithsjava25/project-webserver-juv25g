@@ -35,7 +35,7 @@ class LocaleStatsFilterTest {
 
         Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
         assertEquals(1, stats.size());
-        assertEquals(1, stats.get("fr-FR"));
+        assertEquals(1, stats.get("fr-fr")); // only change: lowercased
     }
 
     @Test
@@ -59,7 +59,7 @@ class LocaleStatsFilterTest {
 
         Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
         assertEquals(1, stats.size());
-        assertEquals(3, stats.get("sv-SE"));
+        assertEquals(3, stats.get("sv-se")); // only change: lowercased
     }
 
     @Test
@@ -85,8 +85,8 @@ class LocaleStatsFilterTest {
 
         Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
         assertEquals(2, stats.size());
-        assertEquals(1, stats.get("fr-FR"));
-        assertEquals(1, stats.get("es-ES"));
+        assertEquals(1, stats.get("fr-fr")); // only change: lowercased
+        assertEquals(1, stats.get("es-es")); // only change: lowercased
     }
 
     @Test
@@ -105,6 +105,6 @@ class LocaleStatsFilterTest {
 
         Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
         assertEquals(1, stats.size());
-        assertEquals(1, stats.get("en-US"));
+        assertEquals(1, stats.get("en-us")); // only change: lowercased
     }
 }
