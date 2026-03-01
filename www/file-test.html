@@ -320,9 +320,23 @@
     } else if (category === 'pdf') {
       contentArea.innerHTML = `<embed src="${path}" type="application/pdf">`;
     } else if (category === 'video') {
-      contentArea.innerHTML = `<video controls><source src="${path}" type="${label}">Your browser does not support this video format.</video>`;
+      const video = document.createElement('video');
+      video.controls = true;
+      video.innerHTML = `<source src="${path}" type="${label}">Your browser does not support this video format.`;
+      video.onerror = () => {
+          contentArea.innerHTML = `<span style="color:#4a6080;font-family:monospace;font-size:.8rem">file not found: ${path}</span>`;
+        };
+      contentArea.innerHTML = '';
+      contentArea.appendChild(video);
     } else if (category === 'audio') {
-      contentArea.innerHTML = `<audio controls><source src="${path}" type="${label}">Your browser does not support this audio format.</audio>`;
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.innerHTML = `<source src="${path}" type="${label}">Your browser does not support this audio format.`;
+      audio.onerror = () => {
+        contentArea.innerHTML = `<span style="color:#4a6080;font-family:monospace;font-size:.8rem">file not found: ${path}</span>`;
+        };
+      contentArea.innerHTML = '';
+      contentArea.appendChild(audio);
     }
   }
 </script>
