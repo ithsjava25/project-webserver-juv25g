@@ -75,19 +75,24 @@ public class StaticFileHandler {
 
 
         if (file.isFile()) {
-            fileBytes = Files.readAllBytes(file.toPath());
+            byte[] fileBytes = Files.readAllBytes(file.toPath());
             response.setBody(fileBytes);
+            response.setStatusCode(SC_OK);
+            response.setContentTypeFromFilename(file.getName());
             statusCode = SC_OK;
         }
         else {
             response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
 
-            File errorFile = new File(WEB_ROOT, "pageNotFound.html");
-            if (errorFile.exists()) {
+            File errorFile = new File(root, "pageNotFound.html");
+            if (errorFile.isFile()) {
                 response.setBody(Files.readAllBytes(errorFile.toPath()));
+                response.setContentTypeFromFilename(errorFile.getName());
             } else {
                 response.setBody("404 Not Found".getBytes());
+                response.setHeader("Content-Type", "text/plain; charset=UTF-8");
             }
+        }
 
         }
 
