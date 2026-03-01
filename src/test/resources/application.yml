@@ -1,0 +1,6 @@
+server:
+  port: 3030
+  rootDir: ./from-classpath
+
+logging:
+  level: DEBUG

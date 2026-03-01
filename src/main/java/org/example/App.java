@@ -3,6 +3,7 @@ package org.example;
 import org.example.config.AppConfig;
 import org.example.config.ConfigLoader;
 
+import java.net.Socket;
 import java.nio.file.Path;
 
 public class App {
@@ -10,13 +11,15 @@ public class App {
     private static final String PORT_FLAG = "--port";
 
     public static void main(String[] args) {
-        Path configPath = Path.of("src/main/resources/application.yml");
 
-        AppConfig appConfig = ConfigLoader.loadOnce(configPath);
+        AppConfig appConfig = ConfigLoader.loadOnceWithClasspathFallback(
+                Path.of("application.yml"),
+                "application.yml"
+        );
 
         int port = resolvePort(args, appConfig.server().port());
 
-        new TcpServer(port).start();
+        new TcpServer(port, ConnectionHandler::new).start();
     }
 
     static int resolvePort(String[] args, int configPort) {

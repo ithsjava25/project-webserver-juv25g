@@ -2,7 +2,6 @@ package org.example.config;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.dataformat.yaml.YAMLFactory;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.InputStream;
@@ -22,6 +21,32 @@ public final class ConfigLoader {
         synchronized (ConfigLoader.class) {
             if (cached == null){
                 cached = load(configPath).withDefaultsApplied();
+            }
+            return cached;
+        }
+    }
+
+    public static AppConfig loadOnceWithClasspathFallback(Path externalPath, String classpathResourceName) {
+        Objects.requireNonNull(externalPath, "externalPath");
+        Objects.requireNonNull(classpathResourceName, "classpathResourceName");
+        if (cached != null) return cached;
+
+        synchronized (ConfigLoader.class) {
+            if (cached == null){
+                AppConfig base;
+                try (InputStream ext = Files.newInputStream(externalPath)) {
+                    ObjectMapper objectMapper = createMapperFor(externalPath);
+                    AppConfig config = objectMapper.readValue(ext, AppConfig.class);
+                    base = config == null ? AppConfig.defaults() : config;
+
+                } catch (java.nio.file.NoSuchFileException ignored) {
+                    base = loadFromClasspath(classpathResourceName);
+
+                } catch (Exception e) {
+                    throw new IllegalStateException("failed to read config file " + externalPath.toAbsolutePath(), e);
+                }
+
+                cached = base.withDefaultsApplied();
             }
             return cached;
         }
@@ -52,20 +77,44 @@ public final class ConfigLoader {
         }
     }
 
-    private static ObjectMapper createMapperFor(Path configPath) {
-        String name = configPath.getFileName().toString().toLowerCase();
+    public static AppConfig loadFromClasspath(String classpathResourceName) {
+        Objects.requireNonNull(classpathResourceName, "classpathResourceName");
+
+        try (InputStream stream = ConfigLoader.class.getClassLoader().getResourceAsStream(classpathResourceName)) {
+            if (stream == null) {
+                return AppConfig.defaults();
+            }
+
+            ObjectMapper  objectMapper = createMapperForName(classpathResourceName);
+
+            AppConfig config = objectMapper.readValue(stream, AppConfig.class);
+            return config == null ? AppConfig.defaults() : config;
+        } catch (Exception e){
+            throw new IllegalStateException("failed to read config file from classpath: " + classpathResourceName, e);
+        }
+    }
+
+    private static ObjectMapper createMapperForName(String fileName) {
+        String name = fileName.toLowerCase();
 
         if (name.endsWith(".yml") || name.endsWith(".yaml")) {
-            return YAMLMapper.builder(new YAMLFactory()).build();
+            return YAMLMapper.builder().build();
 
         } else if (name.endsWith(".json")) {
             return JsonMapper.builder().build();
         } else  {
-            return YAMLMapper.builder(new YAMLFactory()).build();
+            return YAMLMapper.builder().build();
         }
+
     }
 
-    static void resetForTests() {
+    private static ObjectMapper createMapperFor(Path configPath) {
+        String name = configPath.getFileName().toString();
+
+        return createMapperForName(name);
+    }
+
+    public static void resetForTests() {
         cached = null;
     }
 }
