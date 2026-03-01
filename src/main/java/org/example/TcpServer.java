@@ -44,7 +44,7 @@ public class TcpServer {
     }
 
     /*
-    The connection handler must be run in a try-with-resources. Otherwise - if we use try-with - the
+    The connection handler must be run in a try-catch-finally. Otherwise - if we use try-with-resources - the
     connection will always be closed when code reaches handleInternalServerError() and there will never
     be an error print on the client's webpage.
      */
