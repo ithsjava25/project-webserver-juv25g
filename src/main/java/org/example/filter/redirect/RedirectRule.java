@@ -1,4 +1,5 @@
 package org.example.filter.redirect;
+
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -12,7 +13,11 @@ public final class RedirectRule {
         this.targetUrl = Objects.requireNonNull(targetUrl, "targetUrl");
         if (this.targetUrl.isBlank()) {
             throw new IllegalArgumentException("targetUrl must not be blank");
-}
+        }
+        if (this.targetUrl.indexOf('\r') >= 0 || this.targetUrl.indexOf('\n') >= 0
+                || this.targetUrl.indexOf('\0') >= 0) {
+            throw new IllegalArgumentException("targetUrl must not contain CR/LF or null byte");
+        }
 
         if (statusCode != 301 && statusCode != 302) {
             throw new IllegalArgumentException("statusCode must be 301 or 302");
@@ -25,7 +30,7 @@ public final class RedirectRule {
     public int getStatusCode() { return statusCode; }
 
     public boolean matches(String requestPath) {
-        return sourcePattern.matcher(requestPath).matches();
+        return requestPath != null && sourcePattern.matcher(requestPath).matches();
     }
 
     @Override
