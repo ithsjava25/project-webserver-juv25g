@@ -94,8 +94,7 @@ public class StaticFileHandler {
             }
         }
 
-        }
-
+    
     }
 
     public void sendGetRequest(OutputStream outputStream, String uri) throws IOException {
