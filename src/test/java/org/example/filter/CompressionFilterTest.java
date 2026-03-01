@@ -1,5 +1,6 @@
 package org.example.filter;
 
+import org.example.FileResolver;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.Test;
@@ -20,12 +21,16 @@ class CompressionFilterTest {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip, deflate");
 
+        FileResolver.resolvePath("/whatever");
+
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 headers,
-                null
+                null,
+                FileResolver.resolvePath("/whatever")
+
         );
 
         String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
@@ -52,12 +57,15 @@ class CompressionFilterTest {
 
     @Test
     void testNoCompressionWhenClientDoesNotSupport() {
+
+        String resolvedPath = FileResolver.resolvePath("/");
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 Map.of(),
-                null
+                null,
+                resolvedPath
         );
 
         String body = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
@@ -78,8 +86,9 @@ class CompressionFilterTest {
     void testNoCompressionForSmallResponses() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
+        String resolvedPath = FileResolver.resolvePath("/");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, resolvedPath);
 
         String smallBody = "Hello";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -133,8 +142,10 @@ class CompressionFilterTest {
     void testSkipCompressionForImages() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
+        String resolvedPath = FileResolver.resolvePath("/");
 
-        HttpRequest request = new HttpRequest("GET", "/image.jpg", "HTTP/1.1", headers, null);
+
+        HttpRequest request = new HttpRequest("GET", "/image.jpg", "HTTP/1.1", headers, null,  resolvedPath);
 
         String largeImageData = "fake image data ".repeat(200);
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -155,8 +166,9 @@ class CompressionFilterTest {
     void testCompressJsonResponse() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
+        String resolvedPath = FileResolver.resolvePath("/");
 
-        HttpRequest request = new HttpRequest("GET", "/api/data", "HTTP/1.1", headers, null);
+        HttpRequest request = new HttpRequest("GET", "/api/data", "HTTP/1.1", headers, null, resolvedPath);
 
         String jsonData = "{\"data\": " + "\"value\",".repeat(200) + "}";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -177,8 +189,9 @@ class CompressionFilterTest {
     void testHandleContentTypeWithCharset() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
+        String resolvedPath = FileResolver.resolvePath("/");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, resolvedPath);
 
         String body = "<html>" + "content ".repeat(200) + "</html>";
         HttpResponseBuilder response = new HttpResponseBuilder();
