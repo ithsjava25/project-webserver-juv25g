@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.config.ConfigLoader;
 import org.example.filter.FilterChain;
+import org.example.http.HttpCachingHeaders;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 
@@ -22,12 +23,13 @@ public class FileResolver {
      * @return the complete file system path combining the root directory with the processed request path
      */
 
-    public static String resolvePath(String requestPath, HttpResponseBuilder response, FilterChain chain, File errorFile) {
+    public static String resolvePath(String requestPath) {
+            HttpResponseBuilder response = new HttpResponseBuilder();
+            File errorFile = new File("src/main/resources/error.html");
+
         if (requestPath == null || requestPath.isEmpty()) {
             requestPath = "/";
         }
-
-
         String path = requestPath.equals("/") ? "index.html" : requestPath.substring(1);
         String rootDir = ConfigLoader.get().server().rootDir();
 

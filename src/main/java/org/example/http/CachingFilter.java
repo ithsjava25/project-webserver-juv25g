@@ -35,13 +35,17 @@ public class CachingFilter implements Filter {
 
         String resolvedPath = request.getResolvedPath();
         File file = new File(resolvedPath);
-
+        if (!file.isFile()) {
+            chain.doFilter(request, response);
+            return;
+        }
 
 
         Map<String, String> headers = request.getHeaders();
 
         String modifiedSince = headers.get("If-Modified-Since");
         String eTag = generateEtag(file);
+        String quotedEtag = "\"" + eTag + "\"";
         Instant lastModified = Instant.ofEpochMilli(file.lastModified());
 
         String ifNoneMatch = headers.get("If-None-Match");
@@ -51,7 +55,7 @@ public class CachingFilter implements Filter {
         cachingHeaders.setDefaultCacheControlStatic();
 
 
-        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
+        if (ifNoneMatch != null && ifNoneMatch.equals(quotedEtag)) {
             response.setStatusCode(HttpResponseBuilder.SC_NOT_MODIFIED);
             cachingHeaders.getHeaders().forEach(response::addHeader);
             return;
@@ -88,7 +92,7 @@ public class CachingFilter implements Filter {
     }
 
     private String generateEtag(File file) {
-        return "\"" + file.lastModified() + "-" + file.length() + "\"";
+        return file.lastModified() + "-" + file.length();
 
     }
 }

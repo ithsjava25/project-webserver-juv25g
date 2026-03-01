@@ -24,7 +24,7 @@ public class HttpCachingHeadersTest {
 
         String etagValue = cachingHeaders.getHeaders().get("ETag");
 
-        assertThat(etagValue).isEqualTo("123456789");
+        assertThat(etagValue).isEqualTo("\"123456789\"");
 
     }
 
@@ -64,7 +64,7 @@ public class HttpCachingHeadersTest {
         cachingHeaders.addETagHeader("123456789");
         cachingHeaders.applyTo(target);
 
-        assertThat(target).containsEntry("ETag", "123456789");
+        assertThat(target).containsEntry("ETag", "\"123456789\"");
     }
 
 /**
@@ -87,7 +87,7 @@ public class HttpCachingHeadersTest {
 
         assertThat(returnedMap.get("ETag")).isEqualTo("hacked");
 
-        assertThat(cachingHeaders.getHeaders().get("ETag")).isEqualTo("123");
+        assertThat(cachingHeaders.getHeaders().get("ETag")).isEqualTo("\"123\"");
 
     }
 }

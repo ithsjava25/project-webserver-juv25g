@@ -64,8 +64,14 @@ public class StaticFileHandler {
     public void handle(HttpRequest request, HttpResponseBuilder response, FilterChain chain) throws IOException {
 
         String rootDir = ConfigLoader.get().server().rootDir();
-        request.getResolvedPath();
-        File file = new File(rootDir, request.getResolvedPath());
+        File root = new File(rootDir).getCanonicalFile();
+        File file = new File(request.getResolvedPath()).getCanonicalFile();
+
+        if (!file.toPath().startsWith(root.toPath())) {
+            response.setStatusCode(HttpResponseBuilder.SC_FORBIDDEN);
+            response.setBody("403 Forbidden");
+            return;
+        }
 
 
         if (file.isFile()) {
