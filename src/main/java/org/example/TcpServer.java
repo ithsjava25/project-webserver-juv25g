@@ -4,11 +4,8 @@ import org.example.http.HttpResponseBuilder;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 public class TcpServer {
 
@@ -43,29 +40,19 @@ public class TcpServer {
     }
 
     private void processRequest(Socket client) throws Exception {
-        ConnectionHandler handler = null;
-        try{
-            handler = connectionFactory.create(client);
+        try (ConnectionHandler handler = connectionFactory.create(client)) {
             handler.runConnectionHandler();
         } catch (Exception e) {
             handleInternalServerError(client);
-        } finally {
-            if(handler != null)
-                handler.close();
         }
     }
 
 
     private void handleInternalServerError(Socket client){
-        HttpResponseBuilder response = new HttpResponseBuilder();
-        response.setStatusCode(HttpResponseBuilder.SC_INTERNAL_SERVER_ERROR);
-        response.setHeaders(Map.of("Content-Type", "text/plain; charset=utf-8"));
-        response.setBody("⚠️ Internal Server Error 500 ⚠️");
-
         if (!client.isClosed()) {
             try {
                 OutputStream out = client.getOutputStream();
-                out.write(response.build());
+                out.write(HttpResponseBuilder.createErrorResponse(500, "Internal Server Error"));
                 out.flush();
             } catch (IOException e) {
                 System.err.println("Failed to send 500 response: " + e.getMessage());

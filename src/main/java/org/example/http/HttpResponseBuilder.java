@@ -103,6 +103,18 @@ public class HttpResponseBuilder {
         setHeader("Content-Type", mimeType);
     }
 
+    public void setError(int statusCode, String message) {
+        setStatusCode(statusCode);
+        setHeader("Content-Type", "text/html; charset=UTF-8");
+        setBody(String.format("<html><body><h1>%d %s</h1></body></html>", statusCode, message));
+    }
+
+    public static byte[] createErrorResponse(int statusCode, String message) {
+        HttpResponseBuilder builder = new HttpResponseBuilder();
+        builder.setError(statusCode, message);
+        return builder.build();
+    }
+
     /*
      * Builds the complete HTTP response as a byte array and preserves binary content without corruption.
      * @return Complete HTTP response (headers + body) as byte[]

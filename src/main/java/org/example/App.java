@@ -19,7 +19,8 @@ public class App {
 
         int port = resolvePort(args, appConfig.server().port());
 
-        new TcpServer(port, ConnectionHandler::new).start();
+        FileCache fileCache = new FileCache(10);
+        new TcpServer(port, socket -> new ConnectionHandler(socket, fileCache)).start();
     }
 
     static int resolvePort(String[] args, int configPort) {

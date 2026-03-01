@@ -33,8 +33,8 @@ class TcpServerTest {
         String response = outputStream.toString();
         assertAll(
                 () -> assertTrue(response.contains("500")),
-                () -> assertTrue(response.contains("Internal Server Error 500")),
-                () -> assertTrue(response.contains("Content-Type: text/plain"))
+                () -> assertTrue(response.contains("Internal Server Error")),
+                () -> assertTrue(response.contains("Content-Type: text/html"))
         );
     }
 }

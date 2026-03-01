@@ -28,6 +28,8 @@ class ConnectionHandlerTest {
     @TempDir
     Path tempDir;
 
+    private final FileCache cache = new FileCache(10);
+
     @BeforeAll
     static void setupConfig() {
         ConfigLoader.resetForTests();
@@ -49,7 +51,7 @@ class ConnectionHandlerTest {
         when(socket.getInetAddress()).thenReturn(InetAddress.getByName("127.0.0.1"));
 
         // Act
-        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString())) {
+        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString(), cache)) {
             handler.runConnectionHandler();
         }
 
@@ -74,7 +76,7 @@ class ConnectionHandlerTest {
         when(socket.getInetAddress()).thenReturn(InetAddress.getByName("127.0.0.1"));
 
         // Act
-        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString())) {
+        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString(), cache)) {
             handler.runConnectionHandler();
         }
 
@@ -96,12 +98,34 @@ class ConnectionHandlerTest {
         when(socket.getInetAddress()).thenReturn(InetAddress.getByName("127.0.0.1"));
 
         // Act
-        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString())) {
+        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString(), cache)) {
             handler.runConnectionHandler();
         }
 
         // Assert
         String response = outputStream.toString();
         assertThat(response).contains("404");
+    }
+
+    @Test
+    void test_path_traversal_should_return_403() throws Exception {
+        // Arrange
+        String request = "GET /../secret.txt HTTP/1.1\r\nHost: localhost\r\n\r\n";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(request.getBytes(StandardCharsets.UTF_8));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        when(socket.getInputStream()).thenReturn(inputStream);
+        when(socket.getOutputStream()).thenReturn(outputStream);
+        when(socket.getInetAddress()).thenReturn(InetAddress.getByName("127.0.0.1"));
+
+        // Act
+        try (ConnectionHandler handler = new ConnectionHandler(socket, tempDir.toString(), cache)) {
+            handler.runConnectionHandler();
+        }
+
+        // Assert
+        String response = outputStream.toString();
+        assertThat(response).contains("403");
+        assertThat(response).contains("Forbidden");
     }
 }
