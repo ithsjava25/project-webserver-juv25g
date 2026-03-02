@@ -1,7 +1,9 @@
 package org.example.filter;
 
+import com.aayushatharva.brotli4j.Brotli4jLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import com.aayushatharva.brotli4j.encoder.Encoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,20 +12,26 @@ import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Compression filter that compresses HTTP responses with gzip when supported by client.
+ * Compression filter that compresses HTTP responses with gzip or Brotli when supported by client.
  *
- * <p>This filter applies gzip compression to HTTP responses when the following conditions are met:
+ * <p>This filter applies compression to HTTP responses when the following conditions are met:
  * <ul>
- *   <li>Client sends Accept-Encoding header containing "gzip"</li>
+ *   <li>Client sends Accept-Encoding header containing "gzip" or "br" (Brotli)</li>
  *   <li>Response body is larger than 1KB (MIN_COMPRESS_SIZE)</li>
  *   <li>Content-Type is compressible (text-based formats like HTML, CSS, JS, JSON)</li>
  *   <li>Content-Type is not already compressed (images, videos, zip files)</li>
  * </ul>
  *
+ * <p>Compression priority when client supports multiple algorithms:
+ * <ol>
+ *   <li>Brotli (br) - Best compression ratio</li>
+ *   <li>Gzip - Fallback if Brotli fails or not accepted</li>
+ * </ol>
+ *
  * <p>When compression is applied, the filter:
  * <ul>
- *   <li>Compresses the response body using gzip</li>
- *   <li>Sets Content-Encoding: gzip header</li>
+ *   <li>Compresses the response body using the best available algorithm</li>
+ *   <li>Sets Content-Encoding header (br or gzip)</li>
  *   <li>Sets Vary: Accept-Encoding header for proper caching</li>
  * </ul>
  *
@@ -31,6 +39,19 @@ import java.util.zip.GZIPOutputStream;
 
 public class CompressionFilter implements Filter {
     private static final int MIN_COMPRESS_SIZE = 1024;
+    private static final boolean BROTLI_AVAILABLE;
+
+    static {
+        boolean available;
+        try {
+            Brotli4jLoader.ensureAvailability();
+            available = true;
+        } catch (Exception e) {
+            available = false;
+            System.err.println("Brotli native library not available: " + e.getMessage());
+        }
+        BROTLI_AVAILABLE = available;
+    }
 
     private static final Set<String> COMPRESSIBLE_TYPES = Set.of(
             "text/html",
@@ -67,7 +88,7 @@ public class CompressionFilter implements Filter {
         }
 
         String acceptEncoding = getHeader(request, "Accept-Encoding");
-        if (acceptEncoding == null || !acceptEncoding.toLowerCase().contains("gzip")) {
+        if (acceptEncoding == null) {
             return;
         }
 
@@ -81,23 +102,72 @@ public class CompressionFilter implements Filter {
             return;
         }
 
+        if (BROTLI_AVAILABLE && isEncodingAccepted(acceptEncoding, "br")) {
+            if (tryBrotliCompression(response, originalBody)) {
+                return;
+            }
+        }
+
+        if (isEncodingAccepted(acceptEncoding, "gzip")) {
+            tryGzipCompression(response, originalBody);
+        }
+    }
+
+    private boolean isEncodingAccepted(String acceptEncoding, String encoding) {
+        String[] parts = acceptEncoding.toLowerCase().split(",");
+
+        for (String part : parts) {
+            part = part.trim();
+
+            if (part.startsWith(encoding)) {
+                if (part.contains("q=0")) {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean tryBrotliCompression(HttpResponseBuilder response, byte[] originalBody) {
+        try {
+            byte[] compressed = brotliCompress(originalBody);
+
+            response.setBody(compressed);
+            response.setHeader("Content-Encoding", "br");
+            response.removeHeader("Content-Length");
+            updateVaryHeader(response);
+
+            return true;
+        } catch (IOException e) {
+            System.err.println("Brotli compression failed, falling back to gzip: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void tryGzipCompression(HttpResponseBuilder response, byte[] originalBody) {
         try {
             byte[] compressed = gzipCompress(originalBody);
 
             response.setBody(compressed);
             response.setHeader("Content-Encoding", "gzip");
-
-            String existingVary = response.getHeader("Vary");
-            if (existingVary != null && !existingVary.isEmpty()) {
-                if (!existingVary.toLowerCase().contains("accept-encoding")) {
-                    response.setHeader("Vary", existingVary + ", Accept-Encoding");
-                }
-            } else {
-                response.setHeader("Vary", "Accept-Encoding");
-            }
+            response.removeHeader("Content-Length");
+            updateVaryHeader(response);
 
         } catch (IOException e) {
-            System.err.println("CompressionFilter: gzip compression failed: " + e.getMessage());
+            System.err.println("Gzip compression failed: " + e.getMessage());
+        }
+    }
+
+    private void updateVaryHeader(HttpResponseBuilder response) {
+        String existingVary = response.getHeader("Vary");
+        if (existingVary != null && !existingVary.isEmpty()) {
+            if (!existingVary.toLowerCase().contains("accept-encoding")) {
+                response.setHeader("Vary", existingVary + ", Accept-Encoding");
+            }
+        } else {
+            response.setHeader("Vary", "Accept-Encoding");
         }
     }
 
@@ -138,6 +208,14 @@ public class CompressionFilter implements Filter {
         }
 
         return byteStream.toByteArray();
+    }
+
+    private byte[] brotliCompress(byte[] data) throws IOException {
+        try {
+            return Encoder.compress(data);
+        } catch (Exception e) {
+            throw new IOException("Brotli compression failed", e);
+        }
     }
 
     @Override

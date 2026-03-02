@@ -89,6 +89,9 @@ public class HttpResponseBuilder {
     public void setHeader(String name, String value) {
         this.headers.put(name, value);
     }
+    public void removeHeader(String name) {
+        this.headers.remove(name);
+    }
     public String getHeader(String name) {
         return headers.get(name);
     }
