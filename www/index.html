@@ -2,11 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome</title>
-    </head>
+    <title>JUv25 Web Server</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298, #6fb1fc);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 500px;
+
+
+            margin-top: 50px;
+        }
+
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-size: 2.2em;
+        }
+
+        p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #2a5298, #1e3c72);
+            margin-top: 40px;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+
+        @media (max-width: 500px) {
+            h1 { font-size: 1.6em; }
+            p { font-size: 1em; }
+            .card { padding: 35px 20px; }
+        }
+    </style>
+</head>
 <body>
-<h1>Website works!</h1>
-<p>Greetings from StaticFileHandler.</p>
+<div class="card">
+    <h1>JUv25 Web Server </h1>
+    <p>Website works! Greetings from StaticFileHandler.</p>
+    <a href="/health.html" class="btn">Check Server Health </a>
+
+</div>
 </body>
 </html>
-

@@ -13,6 +13,7 @@ public class StaticFileHandler {
     private byte[] fileBytes;
     private int statusCode;
 
+
     // Constructor for production
     public StaticFileHandler() {
         WEB_ROOT = "www";
@@ -23,7 +24,12 @@ public class StaticFileHandler {
         WEB_ROOT = webRoot;
     }
 
-    private void handleGetRequest(String uri) throws IOException {
+    void handleGetRequest(String uri) throws IOException {
+
+        if (uri.isEmpty() || "/".equals(uri)) {
+            uri = "index.html";
+        }
+
         // Sanitize URI
         int q = uri.indexOf('?');
         if (q >= 0) uri = uri.substring(0, q);
@@ -66,4 +72,7 @@ public class StaticFileHandler {
         outputStream.write(response.build());
         outputStream.flush();
     }
+    public byte[] getFileBytes() { return fileBytes; }
+    public int getStatusCode() { return statusCode; }
+
 }
