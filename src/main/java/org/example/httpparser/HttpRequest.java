@@ -17,7 +17,7 @@ public class HttpRequest {
         private final String path;
         private final String version;
         private final Map<String, String> headers;
-        private final String body;
+        private final @Nullable String body;
         private final Map<String, Object> attributes = new HashMap<>();
 
         public HttpRequest(String method,
@@ -40,7 +40,7 @@ public class HttpRequest {
             return version; }
         public Map<String, String> getHeaders() {
             return headers; }
-        public String getBody() {
+        public @Nullable String getBody() {
             return body; }
         public void setAttribute(String key, Object value) {
             attributes.put(key, value);

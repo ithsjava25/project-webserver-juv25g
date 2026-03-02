@@ -85,7 +85,7 @@ public class IpFilter implements Filter {
      * @param ip the IP address
      * @return the trimmed IP address, or {@code null} if the input is {@code null}
      */
-    private String normalizeIp(@Nullable String ip) {
+    private @Nullable String normalizeIp(@Nullable String ip) {
         return ip == null ? null : ip.trim();
     }
 

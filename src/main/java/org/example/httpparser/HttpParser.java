@@ -16,7 +16,7 @@ public class HttpParser extends HttpParseRequestLine {
     private BufferedReader reader;
 
     public void setReader(@Nullable InputStream in) {
-        if (this.reader == null) {
+        if (this.reader == null && in != null) {
             this.reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
         }
     }
