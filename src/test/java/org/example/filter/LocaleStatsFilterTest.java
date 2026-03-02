@@ -1,5 +1,6 @@
 package org.example.filter;
 
+import org.example.FileResolver;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +19,14 @@ class LocaleStatsFilterTest {
 
     @Test
     void testSingleRequestUpdatesStats() {
+        FileResolver.resolvePath("/whatever");
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 Map.of("Accept-Language", "fr-FR,fr;q=0.9"),
-                null
+                null,
+                FileResolver.resolvePath("/whatever")
         );
 
         LocaleFilterWithCookie filter = new LocaleFilterWithCookie();
@@ -40,12 +43,14 @@ class LocaleStatsFilterTest {
 
     @Test
     void testMultipleRequestsSameLocale() {
+        FileResolver.resolvePath("/whatever");
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 Map.of("Accept-Language", "sv-SE,sv;q=0.9"),
-                null
+                null,
+                FileResolver.resolvePath("/whatever")
         );
 
         LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();
@@ -64,13 +69,16 @@ class LocaleStatsFilterTest {
 
     @Test
     void testMultipleRequestsDifferentLocales() {
+        FileResolver.resolvePath("/whatever");
         HttpRequest request1 = new HttpRequest(
                 "GET", "/", "HTTP/1.1",
-                Map.of("Accept-Language", "fr-FR"), null
+                Map.of("Accept-Language", "fr-FR"), null,
+                FileResolver.resolvePath("/whatever")
         );
         HttpRequest request2 = new HttpRequest(
                 "GET", "/", "HTTP/1.1",
-                Map.of("Accept-Language", "es-ES"), null
+                Map.of("Accept-Language", "es-ES"), null,
+                FileResolver.resolvePath("/whatever")
         );
 
         LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();
@@ -91,9 +99,11 @@ class LocaleStatsFilterTest {
 
     @Test
     void testNoLocaleFallsBackToDefault() {
+        FileResolver.resolvePath("/whatever");
         HttpRequest request = new HttpRequest(
                 "GET", "/", "HTTP/1.1",
-                Map.of(), null
+                Map.of(), null,
+                FileResolver.resolvePath("/whatever")
         );
 
         LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();

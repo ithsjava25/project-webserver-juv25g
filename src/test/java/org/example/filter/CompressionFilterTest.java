@@ -1,16 +1,12 @@
 package org.example.filter;
 
-
+import com.aayushatharva.brotli4j.Brotli4jLoader;
 import org.example.FileResolver;
 import org.example.config.ConfigLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
-import org.junit.jupiter.api.BeforeEach;
-
-import com.aayushatharva.brotli4j.Brotli4jLoader;
-import org.example.http.HttpResponseBuilder;
-import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.aayushatharva.brotli4j.decoder.Decoder;
 
@@ -27,14 +23,13 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class CompressionFilterTest {
 
-    @BeforeEach
-    void setUp() {
-        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
-
     private static boolean BROTLI_AVAILABLE = false;
+
 
     @BeforeAll
     static void setupBrotli() {
+        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
+
         try {
             Brotli4jLoader.ensureAvailability();
             BROTLI_AVAILABLE = true;
@@ -49,7 +44,6 @@ class CompressionFilterTest {
     void testGzipCompressionWhenClientSupportsIt() throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip, deflate");
-
         FileResolver.resolvePath("/whatever");
 
         HttpRequest request = new HttpRequest(
@@ -59,7 +53,6 @@ class CompressionFilterTest {
                 headers,
                 null,
                 FileResolver.resolvePath("/whatever")
-
         );
 
         String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
@@ -86,15 +79,14 @@ class CompressionFilterTest {
 
     @Test
     void testNoCompressionWhenClientDoesNotSupport() {
-
-        String resolvedPath = FileResolver.resolvePath("/");
+        FileResolver.resolvePath("/whatever");
         HttpRequest request = new HttpRequest(
                 "GET",
                 "/",
                 "HTTP/1.1",
                 Map.of(),
                 null,
-                resolvedPath
+                FileResolver.resolvePath("/whatever")
         );
 
         String body = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
@@ -115,9 +107,9 @@ class CompressionFilterTest {
     void testNoCompressionForSmallResponses() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
-        String resolvedPath = FileResolver.resolvePath("/");
+        FileResolver.resolvePath("/whatever");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, resolvedPath);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String smallBody = "Hello";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -156,10 +148,9 @@ class CompressionFilterTest {
     void testSkipCompressionForImages() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
-        String resolvedPath = FileResolver.resolvePath("/");
+        FileResolver.resolvePath("/whatever");
 
-
-        HttpRequest request = new HttpRequest("GET", "/image.jpg", "HTTP/1.1", headers, null,  resolvedPath);
+        HttpRequest request = new HttpRequest("GET", "/image.jpg", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String largeImageData = "fake image data ".repeat(200);
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -180,9 +171,9 @@ class CompressionFilterTest {
     void testCompressJsonResponse() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
-        String resolvedPath = FileResolver.resolvePath("/");
+        FileResolver.resolvePath("/whatever");
 
-        HttpRequest request = new HttpRequest("GET", "/api/data", "HTTP/1.1", headers, null, resolvedPath);
+        HttpRequest request = new HttpRequest("GET", "/api/data", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String jsonData = "{\"data\": " + "\"value\",".repeat(200) + "}";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -203,9 +194,9 @@ class CompressionFilterTest {
     void testHandleContentTypeWithCharset() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
-        String resolvedPath = FileResolver.resolvePath("/");
+        FileResolver.resolvePath("/whatever");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, resolvedPath);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String body = "<html>" + "content ".repeat(200) + "</html>";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -225,11 +216,12 @@ class CompressionFilterTest {
     @Test
     void testBrotliCompression() throws Exception {
         assumeTrue(BROTLI_AVAILABLE, "Brotli native library unavailable");
+        FileResolver.resolvePath("/whatever");
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "br");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -253,11 +245,12 @@ class CompressionFilterTest {
     @Test
     void testBrotliPreferredOverGzip() {
         assumeTrue(BROTLI_AVAILABLE, "Brotli native library unavailable");
+        FileResolver.resolvePath("/whatever");
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip, br");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String body = "<html>" + "content ".repeat(200) + "</html>";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -275,9 +268,10 @@ class CompressionFilterTest {
     @Test
     void testGzipWhenOnlyGzipAccepted() {
         Map<String, String> headers = new HashMap<>();
+        FileResolver.resolvePath("/whatever");
         headers.put("Accept-Encoding", "gzip");
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
 
         String body = "<html>" + "content ".repeat(200) + "</html>";
         HttpResponseBuilder response = new HttpResponseBuilder();
@@ -296,11 +290,13 @@ class CompressionFilterTest {
     void testBrotliCompressionBetterThanGzip() {
         assumeTrue(BROTLI_AVAILABLE, "Brotli native library unavailable");
 
+        FileResolver.resolvePath("/whatever");
+
         Map<String, String> headers = new HashMap<>();
         String largeBody = "<html><body>" + "Hello World! ".repeat(200) + "</body></html>";
 
         headers.put("Accept-Encoding", "br");
-        HttpRequest brotliRequest = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest brotliRequest = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
         HttpResponseBuilder brotliResponse = new HttpResponseBuilder();
         brotliResponse.setBody(largeBody);
         brotliResponse.setHeaders(Map.of("Content-Type", "text/html"));
@@ -311,7 +307,7 @@ class CompressionFilterTest {
         int brotliSize = getBodyFromResponse(brotliResponse).length;
 
         headers.put("Accept-Encoding", "gzip");
-        HttpRequest gzipRequest = new HttpRequest("GET", "/", "HTTP/1.1", headers, null);
+        HttpRequest gzipRequest = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
         HttpResponseBuilder gzipResponse = new HttpResponseBuilder();
         gzipResponse.setBody(largeBody);
         gzipResponse.setHeaders(Map.of("Content-Type", "text/html"));

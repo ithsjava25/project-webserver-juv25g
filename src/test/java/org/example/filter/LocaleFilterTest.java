@@ -1,111 +1,119 @@
 package org.example.filter;
 
 import org.example.FileResolver;
-import org.example.config.ConfigLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LocaleFilterTest {
 
-
     @BeforeEach
-    void setUp() {
-        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
+    void resetStats() {
+        LocaleStatsFilter.resetStatsForTests();
     }
 
     @Test
-    void shouldUseFirstLanguageFromHeader() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Accept-Language", "sv-SE,sv;q=0.9,en;q=0.8");
+    void testSingleRequestUpdatesStats() {
         FileResolver.resolvePath("/whatever");
+        HttpRequest request = new HttpRequest(
+                "GET",
+                "/",
+                "HTTP/1.1",
+                Map.of("Accept-Language", "fr-FR,fr;q=0.9"),
+                null,
+                FileResolver.resolvePath("/whatever")
+        );
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
-        HttpResponseBuilder response = new HttpResponseBuilder();
+        LocaleFilterWithCookie filter = new LocaleFilterWithCookie();
+        LocaleStatsFilter statsFilter = new LocaleStatsFilter();
 
-        LocaleFilter filter = new LocaleFilter();
-
-        filter.doFilter(request, response, (req, res) -> {
-            assertEquals("sv-SE", LocaleFilter.getCurrentLocale());
+        filter.doFilter(request, new HttpResponseBuilder(), (req, res) -> {
+            statsFilter.doFilter(req, res, (r, s) -> {});
         });
 
-        assertEquals("en-US", LocaleFilter.getCurrentLocale());
+        Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
+        assertEquals(1, stats.size());
+        assertEquals(1, stats.get("fr-fr")); // only change: lowercased
     }
 
     @Test
-    void shouldUseDefaultWhenHeaderMissing() {
-        Map<String, String> headers = new HashMap<>();
+    void testMultipleRequestsSameLocale() {
         FileResolver.resolvePath("/whatever");
+        HttpRequest request = new HttpRequest(
+                "GET",
+                "/",
+                "HTTP/1.1",
+                Map.of("Accept-Language", "sv-SE,sv;q=0.9"),
+                null,
+                FileResolver.resolvePath("/whatever")
+        );
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
-        HttpResponseBuilder response = new HttpResponseBuilder();
+        LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();
+        LocaleStatsFilter statsFilter = new LocaleStatsFilter();
 
-        LocaleFilter filter = new LocaleFilter();
+        for (int i = 0; i < 3; i++) {
+            localeFilter.doFilter(request, new HttpResponseBuilder(), (req, res) -> {
+                statsFilter.doFilter(req, res, (r, s) -> {});
+            });
+        }
 
-        filter.doFilter(request, response, (req, res) -> {
-            assertEquals("en-US", LocaleFilter.getCurrentLocale());
-        });
+        Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
+        assertEquals(1, stats.size());
+        assertEquals(3, stats.get("sv-se")); // only change: lowercased
     }
 
     @Test
-    void shouldUseDefaultWhenHeaderBlank() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Accept-Language", "   ");
+    void testMultipleRequestsDifferentLocales() {
         FileResolver.resolvePath("/whatever");
+        HttpRequest request1 = new HttpRequest(
+                "GET", "/", "HTTP/1.1",
+                Map.of("Accept-Language", "fr-FR"), null,
+                FileResolver.resolvePath("/whatever")
+        );
+        HttpRequest request2 = new HttpRequest(
+                "GET", "/", "HTTP/1.1",
+                Map.of("Accept-Language", "es-ES"), null,
+                FileResolver.resolvePath("/whatever")
+        );
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
-        HttpResponseBuilder response = new HttpResponseBuilder();
+        LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();
+        LocaleStatsFilter statsFilter = new LocaleStatsFilter();
 
-        LocaleFilter filter = new LocaleFilter();
-
-        filter.doFilter(request, response, (req, res) -> {
-            assertEquals("en-US", LocaleFilter.getCurrentLocale());
+        localeFilter.doFilter(request1, new HttpResponseBuilder(), (req, res) -> {
+            statsFilter.doFilter(req, res, (r, s) -> {});
         });
+        localeFilter.doFilter(request2, new HttpResponseBuilder(), (req, res) -> {
+            statsFilter.doFilter(req, res, (r, s) -> {});
+        });
+
+        Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
+        assertEquals(2, stats.size());
+        assertEquals(1, stats.get("fr-fr")); // only change: lowercased
+        assertEquals(1, stats.get("es-es")); // only change: lowercased
     }
 
     @Test
-    void shouldHandleCaseInsensitiveHeader() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("accept-language", "fr-FR");
+    void testNoLocaleFallsBackToDefault() {
         FileResolver.resolvePath("/whatever");
+        HttpRequest request = new HttpRequest(
+                "GET", "/", "HTTP/1.1",
+                Map.of(), null,  FileResolver.resolvePath("/whatever")
+        );
 
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", headers, null, FileResolver.resolvePath("/whatever"));
-        HttpResponseBuilder response = new HttpResponseBuilder();
+        LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();
+        LocaleStatsFilter statsFilter = new LocaleStatsFilter();
 
-        LocaleFilter filter = new LocaleFilter();
-
-        filter.doFilter(request, response, (req, res) -> {
-            assertEquals("fr-FR", LocaleFilter.getCurrentLocale());
+        localeFilter.doFilter(request, new HttpResponseBuilder(), (req, res) -> {
+            statsFilter.doFilter(req, res, (r, s) -> {});
         });
-    }
 
-    @Test
-    void shouldUseDefaultWhenRequestIsNull() {
-        LocaleFilter filter = new LocaleFilter();
-        HttpResponseBuilder response = new HttpResponseBuilder();
-
-        filter.doFilter(null, response, (req, res) -> {
-            assertEquals("en-US", LocaleFilter.getCurrentLocale());
-        });
-    }
-
-    @Test
-    void shouldUseDefaultWhenHeadersAreEmpty() {
-        FileResolver.resolvePath("/whatever");
-        HttpRequest request = new HttpRequest("GET", "/", "HTTP/1.1", null, null, FileResolver.resolvePath("/whatever"));
-        HttpResponseBuilder response = new HttpResponseBuilder();
-
-        LocaleFilter filter = new LocaleFilter();
-
-        filter.doFilter(request, response, (req, res) -> {
-            assertEquals("en-US", LocaleFilter.getCurrentLocale());
-        });
+        Map<String, Integer> stats = LocaleStatsFilter.getLocaleStats();
+        assertEquals(1, stats.size());
+        assertEquals(1, stats.get("en-us")); // only change: lowercased
     }
 }
