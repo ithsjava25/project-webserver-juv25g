@@ -2,12 +2,13 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Logger;
 
 public class LoggingFilter implements Filter {
 
-    private static final Logger logg = Logger.getLogger(LoggingFilter.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(LoggingFilter.class);
 
     @Override
     public void init() {
@@ -27,10 +28,8 @@ public class LoggingFilter implements Filter {
             long endTime = System.nanoTime();
             long processingTimeInMs = (endTime - startTime) / 1000000;
 
-            String message = String.format("REQUEST: %s %s | STATUS: %s | TIME: %dms",
+            log.info("REQUEST: {} {} | STATUS: {} | TIME: {}ms",
                     request.getMethod(), request.getPath(), response.getStatusCode(), processingTimeInMs);
-
-            logg.info(message);
         }
 
     }

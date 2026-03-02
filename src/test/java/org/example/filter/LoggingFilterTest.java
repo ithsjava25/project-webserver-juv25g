@@ -1,18 +1,18 @@
 package org.example.filter;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -20,26 +20,24 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LoggingFilterTest {
 
-    @Mock Handler handler;
     @Mock HttpRequest request;
     @Mock HttpResponseBuilder response;
     @Mock FilterChain chain;
 
     LoggingFilter filter = new LoggingFilter();
-    Logger logger;
+    ListAppender<ILoggingEvent> appender;
 
     @BeforeEach
     void setup(){
-        logger = Logger.getLogger(LoggingFilter.class.getName());
-        logger.addHandler(handler);
+        Logger logger = (Logger) LoggerFactory.getLogger(LoggingFilter.class);
+
+        appender = new ListAppender<>();
+        appender.start();
+
+        logger.addAppender(appender);
 
         when(request.getMethod()).thenReturn("GET");
         when(request.getPath()).thenReturn("/index.html");
-    }
-
-    @AfterEach
-    void tearDown(){
-        logger.removeHandler(handler);
     }
 
     @Test
@@ -79,11 +77,10 @@ class LoggingFilterTest {
     }
 
     private void verifyLogContent(String expectedMessage){
-        //Use ArgumentCaptor to capture the actual message in the log
-        ArgumentCaptor<LogRecord> logCaptor = ArgumentCaptor.forClass(LogRecord.class);
-        verify(handler).publish(logCaptor.capture());
+        List<ILoggingEvent> logs = appender.list;
 
-        String message = logCaptor.getValue().getMessage();
+        assertThat(logs).isNotEmpty();
+        String message = logs.getFirst().getFormattedMessage();
 
         assertThat(message).contains(expectedMessage);
     }
