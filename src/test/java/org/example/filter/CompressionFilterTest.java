@@ -1,13 +1,16 @@
 package org.example.filter;
 
 import org.example.FileResolver;
+import org.example.config.ConfigLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -15,6 +18,11 @@ import java.util.zip.GZIPInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CompressionFilterTest {
+
+    @BeforeEach
+    void setUp() {
+        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
+    }
 
     @Test
     void testGzipCompressionWhenClientSupportsIt() throws Exception {
