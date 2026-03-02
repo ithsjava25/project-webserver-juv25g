@@ -1,15 +1,17 @@
 package org.example.httpparser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 abstract class HttpParseRequestLine {
     private String method;
     private String uri;
     private String version;
-    private boolean debug = false;
-    private static final Logger logger = Logger.getLogger(HttpParseRequestLine.class.getName());
+
+    private static final Logger log = LoggerFactory.getLogger(HttpParseRequestLine.class);
 
     public void parseHttpRequest(BufferedReader br) throws IOException {
         BufferedReader reader = br;
@@ -31,11 +33,8 @@ abstract class HttpParseRequestLine {
             setVersion(requestLineArray[2]);
         }
 
-        if(debug) {
-            logger.info(getMethod());
-            logger.info(getUri());
-            logger.info(getVersion());
-        }
+        log.debug("METHOD: {} | URI: {} | VERSION: {}",
+                getMethod(), getUri(), getVersion());
     }
 
 
