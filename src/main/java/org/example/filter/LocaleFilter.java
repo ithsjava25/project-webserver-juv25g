@@ -2,6 +2,7 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -26,7 +27,7 @@ public class LocaleFilter implements Filter {
     }
 
     @Override
-    public void doFilter(HttpRequest request,
+    public void doFilter(@Nullable HttpRequest request,
                          HttpResponseBuilder response,
                          FilterChain chain) {
         try {
