@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class LocaleFilterTest {
+class LocaleStatsFilterTest {
 
     @BeforeEach
     void resetStats() {
@@ -102,7 +102,8 @@ class LocaleFilterTest {
         FileResolver.resolvePath("/whatever");
         HttpRequest request = new HttpRequest(
                 "GET", "/", "HTTP/1.1",
-                Map.of(), null,  FileResolver.resolvePath("/whatever")
+                Map.of(), null,
+                FileResolver.resolvePath("/whatever")
         );
 
         LocaleFilterWithCookie localeFilter = new LocaleFilterWithCookie();
