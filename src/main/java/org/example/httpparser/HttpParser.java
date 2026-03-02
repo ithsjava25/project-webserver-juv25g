@@ -15,8 +15,8 @@ public class HttpParser extends HttpParseRequestLine {
     private Map<String, String> headersMap = new HashMap<>();
     private BufferedReader reader;
 
-    public void setReader(@Nullable InputStream in) {
-        if (this.reader == null && in != null) {
+    public void setReader(InputStream in) {
+        if (this.reader == null) {
             this.reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
         }
     }
