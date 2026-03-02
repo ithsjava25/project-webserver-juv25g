@@ -3,6 +3,7 @@ package org.example.filter;
 import com.aayushatharva.brotli4j.Brotli4jLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import com.aayushatharva.brotli4j.encoder.Encoder;
 import org.jspecify.annotations.Nullable;
 
 import java.io.ByteArrayOutputStream;
