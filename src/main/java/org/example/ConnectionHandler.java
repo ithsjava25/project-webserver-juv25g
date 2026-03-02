@@ -4,8 +4,12 @@ import org.example.config.AppConfig;
 import org.example.filter.IpFilter;
 import org.example.httpparser.HttpParser;
 import org.example.httpparser.HttpRequest;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.example.filter.Filter;
 import org.example.filter.FilterChainImpl;
 import org.example.http.HttpResponseBuilder;
@@ -13,6 +17,8 @@ import org.example.config.ConfigLoader;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 public class ConnectionHandler implements AutoCloseable {
 
@@ -40,7 +46,6 @@ public class ConnectionHandler implements AutoCloseable {
         if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
             list.add(createIpFilterFromConfig(ipFilterConfig));
         }
-        // Add more filters here...
         return list;
     }
 
@@ -58,12 +63,18 @@ public class ConnectionHandler implements AutoCloseable {
         parser.parseRequest();
         parser.parseHttp();
 
+        // --- ISSUE FIX ---
+        String rawUri = parser.getUri();
+        String pathOnly = extractPath(rawUri);
+        Map<String, List<String>> queryParams = parseQueryParams(rawUri);
+
         HttpRequest request = new HttpRequest(
                 parser.getMethod(),
-                parser.getUri(),
+                pathOnly,
                 parser.getVersion(),
                 parser.getHeadersMap(),
-                ""
+                "",
+                queryParams
         );
 
         String clientIp = client.getInetAddress().getHostAddress();
@@ -80,16 +91,14 @@ public class ConnectionHandler implements AutoCloseable {
             return;
         }
 
-        resolveTargetFile(parser.getUri());
+        resolveTargetFile(request.getPath());
         sfh.sendGetRequest(client.getOutputStream(), uri);
     }
 
     private HttpResponseBuilder applyFilters(HttpRequest request) {
         HttpResponseBuilder response = new HttpResponseBuilder();
-
         FilterChainImpl chain = new FilterChainImpl(filters);
         chain.doFilter(request, response);
-
         return response;
     }
 
@@ -101,6 +110,67 @@ public class ConnectionHandler implements AutoCloseable {
         }
     }
 
+    // -----------------------------
+    // Query parsing without split()
+    // -----------------------------
+
+    private static String extractPath(String uri) {
+        if (uri == null || uri.isEmpty()) return "/";
+        int q = uri.indexOf('?');
+        String path = (q >= 0) ? uri.substring(0, q) : uri;
+        return path.isEmpty() ? "/" : path;
+    }
+
+    private static Map<String, List<String>> parseQueryParams(String uri) {
+        Map<String, List<String>> params = new HashMap<>();
+        if (uri == null) return params;
+
+        int questionMarkIndex = uri.indexOf('?');
+        if (questionMarkIndex < 0 || questionMarkIndex == uri.length() - 1) {
+            return params;
+        }
+
+        String query = uri.substring(questionMarkIndex + 1);
+
+        int start = 0;
+        while (start < query.length()) {
+
+            int ampIndex = query.indexOf('&', start);
+            if (ampIndex == -1) {
+                ampIndex = query.length();
+            }
+
+            String pair = query.substring(start, ampIndex);
+
+            int equalsIndex = pair.indexOf('=');
+
+            if (pair.isEmpty()) {
+                start = ampIndex + 1;
+                continue;
+            }
+
+            String key;
+            String value;
+
+            if (equalsIndex >= 0) {
+                key = pair.substring(0, equalsIndex);
+                value = pair.substring(equalsIndex + 1);
+            } else {
+                key = pair;
+                value = "";
+            }
+
+            key = URLDecoder.decode(key, StandardCharsets.UTF_8);
+            value = URLDecoder.decode(value, StandardCharsets.UTF_8);
+
+            params.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+
+            start = ampIndex + 1;
+        }
+
+        return params;
+    }
+
     @Override
     public void close() throws Exception {
         client.close();
@@ -109,19 +179,16 @@ public class ConnectionHandler implements AutoCloseable {
     private IpFilter createIpFilterFromConfig(AppConfig.IpFilterConfig config) {
         IpFilter filter = new IpFilter();
 
-        // Set mode
         if ("ALLOWLIST".equalsIgnoreCase(config.mode())) {
             filter.setMode(IpFilter.FilterMode.ALLOWLIST);
         } else {
             filter.setMode(IpFilter.FilterMode.BLOCKLIST);
         }
 
-        // Add blocked IPs
         for (String ip : config.blockedIps()) {
             filter.addBlockedIp(ip);
         }
 
-        // Add allowed IPs
         for (String ip : config.allowedIps()) {
             filter.addAllowedIp(ip);
         }
