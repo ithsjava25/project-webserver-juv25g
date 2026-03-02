@@ -27,7 +27,7 @@ public class LocaleFilter implements Filter {
     }
 
     @Override
-    public void doFilter(@Nullable HttpRequest request,
+    public void doFilter(HttpRequest request,
                          HttpResponseBuilder response,
                          FilterChain chain) {
         try {
@@ -59,7 +59,7 @@ public class LocaleFilter implements Filter {
      * The first language tag is used, and any optional quality value (e.g., ";q=0.9") is stripped.
      * If the request itself is null, the default locale is also returned.
      */
-    private String resolveLocale(HttpRequest request) {
+    private String resolveLocale(@Nullable HttpRequest request) {
 
         if (request == null) {
             return DEFAULT_LOCALE;
