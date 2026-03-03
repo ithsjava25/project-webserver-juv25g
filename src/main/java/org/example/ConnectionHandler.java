@@ -35,6 +35,9 @@ public class ConnectionHandler implements AutoCloseable {
 
     private List<Filter> buildFilters() {
         List<Filter> list = new ArrayList<>();
+
+        list.add(new org.example.filter.RateLimitingFilter());
+
         AppConfig config = ConfigLoader.get();
         AppConfig.IpFilterConfig ipFilterConfig = config.ipFilter();
         if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
@@ -73,7 +76,8 @@ public class ConnectionHandler implements AutoCloseable {
 
         int statusCode = response.getStatusCode();
         if (statusCode == HttpResponseBuilder.SC_FORBIDDEN ||
-                statusCode == HttpResponseBuilder.SC_BAD_REQUEST) {
+                statusCode == HttpResponseBuilder.SC_BAD_REQUEST ||
+                statusCode == HttpResponseBuilder.SC_TOO_MANY_REQUESTS) {
             byte[] responseBytes = response.build();
             client.getOutputStream().write(responseBytes);
             client.getOutputStream().flush();
