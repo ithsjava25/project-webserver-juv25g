@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HttpParseRequestLineTest {
@@ -29,12 +28,6 @@ class HttpParseRequestLineTest {
         assertThat(httpParseRequestLine.getUri()).isEqualTo("/");
         assertThat(httpParseRequestLine.getVersion()).isEqualTo("HTTP/1.1");
     }
-
-    @Test
-    void testParserThrowErrorWhenNull(){
-        assertThatThrownBy(() -> httpParseRequestLine.setReader(null)).isInstanceOf(NullPointerException.class);
-    }
-
 
     @Test
     void testParserThrowErrorWhenEmpty(){

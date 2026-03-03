@@ -1,5 +1,7 @@
 package org.example.http;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Map;
 
 /**
@@ -56,7 +58,7 @@ public final class MimeTypeDetector {
      */
 
 
-    public static String detectMimeType(String filename) {
+    public static String detectMimeType(@Nullable String filename) {
 
         String octet = "application/octet-stream";
 

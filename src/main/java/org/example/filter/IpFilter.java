@@ -3,6 +3,7 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +85,7 @@ public class IpFilter implements Filter {
      * @param ip the IP address
      * @return the trimmed IP address, or {@code null} if the input is {@code null}
      */
-    private String normalizeIp(String ip) {
+    private @Nullable String normalizeIp(@Nullable String ip) {
         return ip == null ? null : ip.trim();
     }
 
@@ -92,14 +93,14 @@ public class IpFilter implements Filter {
         this.mode = mode;
     }
 
-    public void addBlockedIp(String ip) {
+    public void addBlockedIp(@Nullable String ip) {
         if (ip == null) {
             throw new IllegalArgumentException("IP address cannot be null");
         }
         blockedIps.add(normalizeIp(ip));
     }
 
-    public void addAllowedIp(String ip) {
+    public void addAllowedIp(@Nullable String ip) {
         if (ip == null) {
             throw new IllegalArgumentException("IP address cannot be null");
         }

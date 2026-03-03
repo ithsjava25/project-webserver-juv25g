@@ -1,5 +1,7 @@
 package org.example.httpparser;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Collections;
 
 import java.util.HashMap;
@@ -17,8 +19,9 @@ public class HttpRequest {
         private final String path;
         private final String version;
         private final Map<String, String> headers;
-        private final String body;
 
+
+        private final @Nullable String body;
 
         private final Map<String, Object> attributes = new HashMap<>();
 
@@ -27,7 +30,7 @@ public class HttpRequest {
                            String path,
                            String version,
                            Map<String, String> headers,
-                           String body) {
+                           @Nullable String body) {
             this.method = method;
             this.path = path;
             this.version = version;
@@ -43,7 +46,7 @@ public class HttpRequest {
             return version; }
         public Map<String, String> getHeaders() {
             return headers; }
-        public String getBody() {
+        public @Nullable String getBody() {
             return body; }
 
 
