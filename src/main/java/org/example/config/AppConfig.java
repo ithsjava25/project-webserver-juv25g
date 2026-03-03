@@ -7,21 +7,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record AppConfig(
         @JsonProperty("server") ServerConfig server,
         @JsonProperty("logging") LoggingConfig logging,
-        @JsonProperty("ipFilter") IpFilterConfig ipFilter
+        @JsonProperty("ipFilter") IpFilterConfig ipFilter,
+        @JsonProperty("maxRequestBody") MaxRequestBodyConfig maxRequestBody
+
 ) {
     public static AppConfig defaults() {
         return new AppConfig(
                 ServerConfig.defaults(),
                 LoggingConfig.defaults(),
-                IpFilterConfig.defaults()
+                IpFilterConfig.defaults(),
+                MaxRequestBodyConfig.defaults()
         );
     }
 
     public AppConfig withDefaultsApplied() {
         ServerConfig serverConfig = (server == null ? ServerConfig.defaults() : server.withDefaultsApplied());
         LoggingConfig loggingConfig = (logging == null ? LoggingConfig.defaults() : logging.withDefaultsApplied());
-        IpFilterConfig ipFilterConfig = (ipFilter == null ? IpFilterConfig.defaults() : ipFilter.withDefaultsApplied());  // ← LÄGG TILL
-        return new AppConfig(serverConfig, loggingConfig, ipFilterConfig);  // ← UPPDATERA DENNA RAD
+        IpFilterConfig ipFilterConfig = (ipFilter == null ? IpFilterConfig.defaults() : ipFilter.withDefaultsApplied());
+        MaxRequestBodyConfig maxRequestBodyConfig =
+                (maxRequestBody == null ? MaxRequestBodyConfig.defaults() : maxRequestBody.withDefaultsApplied());
+
+        return new AppConfig(serverConfig, loggingConfig, ipFilterConfig, maxRequestBodyConfig);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -74,6 +80,27 @@ public record AppConfig(
             java.util.List<String> blocked = (blockedIps == null) ? java.util.List.of() : blockedIps;
             java.util.List<String> allowed = (allowedIps == null) ? java.util.List.of() : allowedIps;
             return new IpFilterConfig(e, m, blocked, allowed);
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record MaxRequestBodyConfig(
+            @JsonProperty("enabled") Boolean enabled,
+            @JsonProperty("maxBytes") Long maxBytes
+    ) {
+        public static MaxRequestBodyConfig defaults() {
+            return new MaxRequestBodyConfig(false, 1_048_576L);
+        }
+
+        public MaxRequestBodyConfig withDefaultsApplied() {
+            Boolean enabledFlag = (enabled == null) ? false : enabled;
+            long limit = (maxBytes == null) ? 1_048_576L : maxBytes;
+
+            if (limit < 0) {
+                throw new IllegalArgumentException("maxRequestBody.maxBytes must be >= 0");
+            }
+
+            return new MaxRequestBodyConfig(enabledFlag, limit);
         }
     }
 }

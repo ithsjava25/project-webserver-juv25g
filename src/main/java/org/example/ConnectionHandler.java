@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.config.AppConfig;
 import org.example.filter.IpFilter;
+import org.example.filter.MaxRequestBodySizeFilter;
 import org.example.httpparser.HttpParser;
 import org.example.httpparser.HttpRequest;
 import java.util.ArrayList;
@@ -40,6 +41,10 @@ public class ConnectionHandler implements AutoCloseable {
         if (Boolean.TRUE.equals(ipFilterConfig.enabled())) {
             list.add(createIpFilterFromConfig(ipFilterConfig));
         }
+        AppConfig.MaxRequestBodyConfig maxBodyConfig = config.maxRequestBody();
+        if (Boolean.TRUE.equals(maxBodyConfig.enabled())) {
+            list.add(new MaxRequestBodySizeFilter(maxBodyConfig.maxBytes()));
+        }
         // Add more filters here...
         return list;
     }
@@ -63,7 +68,7 @@ public class ConnectionHandler implements AutoCloseable {
                 parser.getUri(),
                 parser.getVersion(),
                 parser.getHeadersMap(),
-                ""
+                null
         );
 
         String clientIp = client.getInetAddress().getHostAddress();
@@ -73,7 +78,8 @@ public class ConnectionHandler implements AutoCloseable {
 
         int statusCode = response.getStatusCode();
         if (statusCode == HttpResponseBuilder.SC_FORBIDDEN ||
-                statusCode == HttpResponseBuilder.SC_BAD_REQUEST) {
+                statusCode == HttpResponseBuilder.SC_BAD_REQUEST ||
+                statusCode == HttpResponseBuilder.SC_PAYLOAD_TOO_LARGE) {
             byte[] responseBytes = response.build();
             client.getOutputStream().write(responseBytes);
             client.getOutputStream().flush();
