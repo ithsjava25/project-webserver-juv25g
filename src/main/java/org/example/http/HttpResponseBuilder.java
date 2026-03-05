@@ -108,6 +108,13 @@ public class HttpResponseBuilder {
         setHeader("Content-Type", mimeType);
     }
 
+
+    public void addHeader(String key, String value){
+        this.headers.put(key, value);
+    }
+
+
+
     /*
      * Builds the complete HTTP response as a byte array and preserves binary content without corruption.
      * @return Complete HTTP response (headers + body) as byte[]
@@ -152,6 +159,7 @@ public class HttpResponseBuilder {
         System.arraycopy(contentBody, 0, response, headerBytes.length, contentBody.length);
 
         return response;
+
     }
 
     public Map<String, String> getHeaders() {
