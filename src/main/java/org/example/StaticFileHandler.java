@@ -1,7 +1,12 @@
 package org.example;
 
+import org.example.config.ConfigLoader;
+import org.example.filter.FilterChain;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+
+
+import static org.example.http.HttpResponseBuilder.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +54,8 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
         uri = defaultFile(uri);
 
         // Path traversal check
+
+
         File root;
         File file;
         try {
@@ -56,6 +63,7 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
             file = new File(root, uri).getCanonicalFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
+
         }
 
         if (!file.toPath().startsWith(root.toPath())) {
@@ -88,6 +96,51 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
         response.setBody(fileBytes);
     }
 
+    public void handle(HttpRequest request, HttpResponseBuilder response, FilterChain chain) throws IOException {
+
+        String rootDir = ConfigLoader.get().server().rootDir();
+        File root = new File(rootDir).getCanonicalFile();
+        File file = new File(request.getResolvedPath()).getCanonicalFile();
+
+        if (!file.toPath().startsWith(root.toPath())) {
+            response.setStatusCode(HttpResponseBuilder.SC_FORBIDDEN);
+            response.setBody("403 Forbidden");
+            return;
+        }
+
+
+        if (file.isFile()) {
+            byte[] fileBytes = Files.readAllBytes(file.toPath());
+            response.setBody(fileBytes);
+            response.setStatusCode(SC_OK);
+            response.setContentTypeFromFilename(file.getName());
+            statusCode = SC_OK;
+        }
+        else {
+            response.setStatusCode(HttpResponseBuilder.SC_NOT_FOUND);
+
+            File errorFile = new File(root, "pageNotFound.html");
+            if (errorFile.isFile()) {
+                response.setBody(Files.readAllBytes(errorFile.toPath()));
+                response.setContentTypeFromFilename(errorFile.getName());
+            } else {
+                response.setBody("404 Not Found".getBytes());
+                response.setHeader("Content-Type", "text/plain; charset=UTF-8");
+            }
+        }
+
+    
+    }
+
+    public void sendGetRequest(OutputStream outputStream, String uri) throws IOException {
+        handleGetRequest(uri);
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setStatusCode(statusCode);
+        // Use MimeTypeDetector instead of hardcoded text/html
+        response.setContentTypeFromFilename(uri);
+        response.setBody(fileBytes);
+        outputStream.write(response.build());
+        outputStream.flush();
     @Override
     public void handle(HttpRequest request, HttpResponseBuilder response) {
         handleGetRequest(request, response);

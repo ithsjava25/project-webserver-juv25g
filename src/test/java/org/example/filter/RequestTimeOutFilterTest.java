@@ -1,10 +1,14 @@
 package org.example.filter;
 
+import org.example.FileResolver;
+import org.example.config.ConfigLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.example.http.HttpResponseBuilder.*;
@@ -18,11 +22,27 @@ class RequestTimeOutFilterTest {
     private HttpResponseBuilder response;
     private HttpRequest request;
 
+
+
     @BeforeEach
     void setUp() {
         filter = new RequestTimeOutFilter(100);
         response = new HttpResponseBuilder();
-        request = new HttpRequest("GET", "/", "HTTP/1.1",null,"");
+
+        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
+
+        String resolvedPath = FileResolver.resolvePath("/");
+
+        request = new HttpRequest(
+                "GET",
+                "/",
+                "HTTP/1.1",
+                Map.of(),
+                "",
+                resolvedPath
+        );
+
+
     }
 
 

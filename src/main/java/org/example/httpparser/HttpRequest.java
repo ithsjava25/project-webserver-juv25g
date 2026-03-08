@@ -3,7 +3,9 @@ package org.example.httpparser;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
+
 import java.util.HashMap;
+
 import java.util.Map;
 
 /*
@@ -17,6 +19,11 @@ public class HttpRequest {
         private final String path;
         private final String version;
         private final Map<String, String> headers;
+        private final String body;
+        private final String resolvedPath;
+
+    private final Map<String, Object> attributes = new HashMap<>();
+
         private final @Nullable String body;
         private final Map<String, Object> attributes = new HashMap<>();
 
@@ -24,12 +31,15 @@ public class HttpRequest {
                            String path,
                            String version,
                            Map<String, String> headers,
+                           String body,
+                           String resolvedPath) {
                            @Nullable String body) {
             this.method = method;
             this.path = path;
             this.version = version;
             this.headers = headers != null ? Map.copyOf(headers) : Collections.emptyMap();
             this.body = body;
+            this.resolvedPath = resolvedPath;
         }
 
         public String getMethod() {
@@ -42,10 +52,15 @@ public class HttpRequest {
             return headers; }
         public @Nullable String getBody() {
             return body; }
+        public String getResolvedPath() {
+        return resolvedPath; }
+
+
         public void setAttribute(String key, Object value) {
             attributes.put(key, value);
         }
         public Object getAttribute(String key) {
             return attributes.get(key);
         }
+
     }

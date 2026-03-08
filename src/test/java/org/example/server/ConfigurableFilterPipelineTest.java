@@ -1,11 +1,17 @@
 package org.example.server;
 
+import org.example.FileResolver;
+import org.example.config.ConfigLoader;
 import org.example.filter.Filter;
 import org.example.filter.FilterChain;
 import org.example.httpparser.HttpRequest;
 import org.example.http.HttpResponseBuilder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +19,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConfigurableFilterPipelineTest {
+
+    @BeforeEach
+    void setUp() {
+        ConfigLoader.loadOnce(Paths.get("src/test/resources/test-config.yml"));
+    }
 
     @Test
     void global_filter_runs() {
@@ -291,7 +302,8 @@ class ConfigurableFilterPipelineTest {
     }
 
     private static HttpRequest newRequest(String path) {
-        return new HttpRequest("GET", path, "HTTP/1.1", Map.of(), "");
+        FileResolver.resolvePath("/whatever");
+        return new HttpRequest("GET", path, "HTTP/1.1", Map.of(), "", FileResolver.resolvePath("/whatever"));
     }
 
     static class TestFilter implements Filter {
