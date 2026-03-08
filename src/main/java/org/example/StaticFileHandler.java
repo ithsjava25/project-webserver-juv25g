@@ -54,7 +54,7 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
         uri = defaultFile(uri);
 
         // Path traversal check
- refactor-file-resolving
+
         File root = new File(WEB_ROOT).getCanonicalFile();
         File file = new File(root, uri).getCanonicalFile();
 
