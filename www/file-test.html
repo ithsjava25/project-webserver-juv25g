@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Type Test</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f1e;
+      --surface: #101828;
+      --border: #1e3050;
+      --accent: #e8f0ff;
+      --text: #c8d8f0;
+      --text-dim: #4a6080;
+      --radius: 4px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 760px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: #0a0f1e;
+    }
+
+    .card-header label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    select {
+      flex: 1;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.45rem 0.75rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    select:hover, select:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    select option {
+      background: #0a0f1e;
+    }
+
+    .viewer {
+      position: relative;
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-dim);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    .placeholder svg {
+      opacity: 0.3;
+    }
+
+    #content-area {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #content-area img {
+      max-width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      border-radius: var(--radius);
+      display: block;
+    }
+
+    #content-area video {
+      max-width: 100%;
+      max-height: 380px;
+      border-radius: var(--radius);
+      background: #050a14;
+    }
+
+    #content-area audio {
+      width: 100%;
+      max-width: 480px;
+      accent-color: var(--accent);
+    }
+
+    #content-area pre {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #aaa;
+      overflow: auto;
+      max-height: 380px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    #content-area embed,
+    #content-area iframe {
+      width: 100%;
+      height: 380px;
+      border: none;
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: #0a0f1e;
+    }
+
+    .card-footer {
+      padding: 0.65rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: #0a0f1e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filepath {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .filepath span {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<h1>File Type Viewer</h1>
+
+<div class="card">
+  <div class="card-header">
+    <label for="file-select">Type</label>
+    <select id="file-select" onchange="loadFile(this.value)">
+      <option value="">— select a file type —</option>
+      <optgroup label="Images">
+        <option value="jpeg">JPEG (.jpeg)</option>
+        <option value="jpg">JPG (.jpg)</option>
+        <option value="png">PNG (.png)</option>
+        <option value="gif">GIF (.gif)</option>
+        <option value="webp">WebP (.webp)</option>
+        <option value="svg">SVG (.svg)</option>
+      </optgroup>
+      <optgroup label="Text">
+        <option value="txt">TXT (.txt)</option>
+      </optgroup>
+      <optgroup label="Document">
+        <option value="pdf">PDF (.pdf)</option>
+      </optgroup>
+      <optgroup label="Video">
+        <option value="mp4">MP4 (.mp4)</option>
+        <option value="webm">WebM (.webm)</option>
+      </optgroup>
+      <optgroup label="Audio">
+        <option value="mp3">MP3 (.mp3)</option>
+        <option value="wav">WAV (.wav)</option>
+      </optgroup>
+    </select>
+    <span class="tag" id="type-tag">—</span>
+  </div>
+
+  <div class="viewer">
+    <div id="content-area">
+      <div class="placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+        select a file type above
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <span class="filepath" id="filepath-display">—</span>
+  </div>
+</div>
+
+<!-- JavaScript which handles file selection and display -->
+<script>
+  // A const mapping the path, category of file and label of each supported file format
+  const types = {
+    jpg:  { path: '/test-files/test.jpg',  category: 'image', label: 'jpg'  },
+    jpeg: { path: '/test-files/test.jpeg', category: 'image', label: 'jpeg' },
+    png:  { path: '/test-files/test.png',  category: 'image', label: 'png'  },
+    gif:  { path: '/test-files/test.gif',  category: 'image', label: 'gif'  },
+    webp: { path: '/test-files/test.webp', category: 'image', label: 'webp' },
+    svg:  { path: '/test-files/test.svg',  category: 'image', label: 'svg'  },
+    txt:  { path: '/test-files/test.txt',  category: 'text',  label: 'plain' },
+    pdf:  { path: '/test-files/test.pdf',  category: 'pdf',   label: 'pdf' },
+    mp4:  { path: '/test-files/test.mp4',  category: 'video', label: 'video/mp4'  },
+    webm: { path: '/test-files/test.webm', category: 'video', label: 'video/webm' },
+    mp3:  { path: '/test-files/test.mp3',  category: 'audio', label: 'audio/mpeg' },
+    wav:  { path: '/test-files/test.wav',  category: 'audio', label: 'audio/wav'  },
+  };
+
+  /**
+   * Loads the type of file selected in the dropdown menu.
+   * @param fileType
+   */
+  function loadFile(fileType) {
+    const contentArea = document.getElementById('content-area');
+    const typeTag = document.getElementById('type-tag');
+    const filePathDisplay = document.getElementById('filepath-display');
+
+    // If no filetype is selected then show a message prompting the user to select a file type
+    if (!fileType || !types[fileType]) {
+      contentArea.innerHTML = `<div class="placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>select a file type above</div>`;
+      typeTag.textContent = '—';
+      filePathDisplay.innerHTML = '—';
+      return;
+    }
+
+    // Assigns a variable to each value in the types const and displays the information in the card header
+    const { path, category, label } = types[fileType];
+    typeTag.textContent = fileType;
+    filePathDisplay.innerHTML = `<span>${path}</span>`;
+
+    // Displays the file type based on category
+    if (category === 'image') {
+      const image = document.createElement('img');
+      image.src = path;
+      image.alt = `test ${fileType}`;
+      image.onerror = () => {
+        image.outerHTML = `<span style = "color:#4a6080;font-family:monospace;font-size:.8rem">file not found: ${path}</span>`;
+      };
+      contentArea.innerHTML = '';
+      contentArea.appendChild(image);
+    } else if (category === 'text') {
+      fetch(path)
+              .then(response => { if (!response.ok) { throw new Error('not found'); } return response.text(); })
+              .then(responseText => {
+                const pre = document.createElement('pre');
+                pre.textContent = responseText;
+                contentArea.innerHTML = '';
+                contentArea.appendChild(pre);
+              })
+              .catch(() => { contentArea.innerHTML = `<span style="color:#555;font-family:monospace;font-size:.8rem">file not found: ${path}</span>`; });
+    } else if (category === 'pdf') {
+      contentArea.innerHTML = `<embed src="${path}" type="application/pdf">`;
+    } else if (category === 'video') {
+      const video = document.createElement('video');
+      video.controls = true;
+      video.innerHTML = `<source src="${path}" type="${label}">Your browser does not support this video format.`;
+      video.onerror = () => {
+          contentArea.innerHTML = `<span style="color:#4a6080;font-family:monospace;font-size:.8rem">file not found: ${path}</span>`;
+        };
+      contentArea.innerHTML = '';
+      contentArea.appendChild(video);
+    } else if (category === 'audio') {
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.innerHTML = `<source src="${path}" type="${label}">Your browser does not support this audio format.`;
+      audio.onerror = () => {
+        contentArea.innerHTML = `<span style="color:#4a6080;font-family:monospace;font-size:.8rem">file not found: ${path}</span>`;
+        };
+      contentArea.innerHTML = '';
+      contentArea.appendChild(audio);
+    }
+  }
+</script>
+</body>
+</html>

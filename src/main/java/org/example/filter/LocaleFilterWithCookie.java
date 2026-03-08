@@ -2,6 +2,7 @@ package org.example.filter;
 
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class LocaleFilterWithCookie implements Filter {
      * <p>
      * If the cookie header is missing, blank, or malformed, returns null.
      */
-    private String extractLocaleFromCookie(HttpRequest request) {
+    private @Nullable String extractLocaleFromCookie(HttpRequest request) {
         Map<String, String> headers = request.getHeaders();
         if (headers == null) {
             return null;
@@ -111,7 +112,7 @@ public class LocaleFilterWithCookie implements Filter {
      * If the header is missing, blank, or malformed, returns null.
      * The first language tag is used and any optional quality value (e.g., ";q=0.9") is stripped.
      */
-    private String extractLocaleFromHeader(HttpRequest request) {
+    private @Nullable String extractLocaleFromHeader(HttpRequest request) {
         Map<String, String> headers = request.getHeaders();
         if (headers == null) {
             return null;

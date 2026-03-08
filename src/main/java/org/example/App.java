@@ -2,8 +2,8 @@ package org.example;
 
 import org.example.config.AppConfig;
 import org.example.config.ConfigLoader;
+import org.jspecify.annotations.Nullable;
 
-import java.net.Socket;
 import java.nio.file.Path;
 
 public class App {
@@ -30,7 +30,7 @@ public class App {
         return validatePort(configPort, "configuration server.port");
     }
 
-    static Integer parsePortFromCli(String[] args) {
+    static @Nullable Integer parsePortFromCli(String[] args) {
         if (args == null) return null;
 
         for (int i = 0; i < args.length; i++) {

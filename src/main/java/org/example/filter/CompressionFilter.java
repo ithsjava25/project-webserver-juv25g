@@ -4,6 +4,7 @@ import com.aayushatharva.brotli4j.Brotli4jLoader;
 import org.example.http.HttpResponseBuilder;
 import org.example.httpparser.HttpRequest;
 import com.aayushatharva.brotli4j.encoder.Encoder;
+import org.jspecify.annotations.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -186,7 +187,7 @@ public class CompressionFilter implements Filter {
                 baseType.startsWith("text/");
     }
 
-    private String getHeader(HttpRequest request, String headerName) {
+    private @Nullable String getHeader(HttpRequest request, String headerName) {
         Map<String, String> headers = request.getHeaders();
 
         String value = headers.get(headerName);

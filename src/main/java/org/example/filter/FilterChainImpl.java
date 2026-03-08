@@ -1,15 +1,16 @@
 package org.example.filter;
 
-import org.example.httpparser.HttpRequest;
 import org.example.http.HttpResponseBuilder;
+import org.example.httpparser.HttpRequest;
+import org.example.server.TerminalHandler;
 
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.Objects;
 
 public class FilterChainImpl implements FilterChain {
 
     private final List<Filter> filters;
-    private final BiConsumer<HttpRequest, HttpResponseBuilder> terminalHandler;
+    private final TerminalHandler terminalHandler;
     private int index = 0;
 
     public FilterChainImpl(List<Filter> filters) {
@@ -19,9 +20,9 @@ public class FilterChainImpl implements FilterChain {
     }
 
     public FilterChainImpl(List<Filter> filters,
-                           BiConsumer<HttpRequest, HttpResponseBuilder> terminalHandler) {
-        this.filters = filters;
-        this.terminalHandler = terminalHandler;
+                           TerminalHandler terminalHandler) {
+        this.filters = Objects.requireNonNull(filters, "filters must not be null");
+        this.terminalHandler = Objects.requireNonNull(terminalHandler, "terminalHandler must not be null");
     }
 
     @Override
@@ -30,7 +31,7 @@ public class FilterChainImpl implements FilterChain {
             Filter next = filters.get(index++);
             next.doFilter(request, response, this);
         } else {
-            terminalHandler.accept(request, response);
+            terminalHandler.handle(request, response);
         }
     }
 }
