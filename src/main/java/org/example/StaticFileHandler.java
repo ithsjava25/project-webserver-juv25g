@@ -55,13 +55,6 @@ public class StaticFileHandler implements org.example.server.TerminalHandler {
 
         // Path traversal check
 
-        File root = new File(WEB_ROOT).getCanonicalFile();
-        File file = new File(root, uri).getCanonicalFile();
-
-        if (!file.toPath().startsWith(root.toPath())) {
-            fileBytes = "403 Forbidden".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            statusCode = SC_FORBIDDEN;
-            return;
 
         File root;
         File file;
