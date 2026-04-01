@@ -72,6 +72,7 @@ public class StaticFileHandler {
         HttpResponseBuilder response = new HttpResponseBuilder();
         response.setStatusCode(statusCode);
         response.setContentTypeFromFilename(uri);
+        response.setHeader("Content-Length", String.valueOf(fileBytes.length));
         response.setBody(new byte[0]); // Suppress body
         outputStream.write(response.build());
         outputStream.flush();
