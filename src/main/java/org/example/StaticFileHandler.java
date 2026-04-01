@@ -66,4 +66,14 @@ public class StaticFileHandler {
         outputStream.write(response.build());
         outputStream.flush();
     }
+    // New method for HEAD support: headers only
+    public void sendHeadRequest(OutputStream outputStream, String uri) throws IOException {
+        handleGetRequest(uri); // Reuse GET to compute status and headers
+        HttpResponseBuilder response = new HttpResponseBuilder();
+        response.setStatusCode(statusCode);
+        response.setContentTypeFromFilename(uri);
+        response.setBody(new byte[0]); // Suppress body
+        outputStream.write(response.build());
+        outputStream.flush();
+    }
 }

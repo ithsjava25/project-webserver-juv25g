@@ -81,7 +81,13 @@ public class ConnectionHandler implements AutoCloseable {
         }
 
         resolveTargetFile(parser.getUri());
-        sfh.sendGetRequest(client.getOutputStream(), uri);
+
+        // Handle GET vs HEAD
+        if ("HEAD".equalsIgnoreCase(request.getMethod())) {
+            sfh.sendHeadRequest(client.getOutputStream(), uri);
+        } else {
+            sfh.sendGetRequest(client.getOutputStream(), uri);
+        }
     }
 
     private HttpResponseBuilder applyFilters(HttpRequest request) {
